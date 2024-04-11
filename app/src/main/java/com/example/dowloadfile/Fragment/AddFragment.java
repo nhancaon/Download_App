@@ -56,6 +56,8 @@ import com.google.firebase.storage.UploadTask;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -310,7 +312,16 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     private void downloadFile(String url) {
         String nameFromURL = URLUtil.guessFileName(url, null, null);
         String extension = FilenameUtils.getExtension(nameFromURL);
-        String file_name = fileName.getText().toString() + "." + extension;
+        if (!isValidFileType(extension)) {
+            Toast.makeText(requireContext(), "Unsupported file type", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String file_name = fileName.getText().toString().trim();
+        if (file_name.isEmpty()) {
+            Toast.makeText(requireContext(), "File name cannot be empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        file_name += "." + extension;
         String downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
         File file = new File(downloadPath,file_name);
 
@@ -649,5 +660,16 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         } else {
             return false;
         }
+    }
+
+    private boolean isValidFileType(String extension) {
+        return extension.equalsIgnoreCase("docx") ||
+                extension.equalsIgnoreCase("pdf") ||
+                extension.equalsIgnoreCase("jpg") ||
+                extension.equalsIgnoreCase("jpeg") ||
+                extension.equalsIgnoreCase("png") ||
+                extension.equalsIgnoreCase("mp4") ||
+                extension.equalsIgnoreCase("avi") ||
+                extension.equalsIgnoreCase("html");
     }
 }

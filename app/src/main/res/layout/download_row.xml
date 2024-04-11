@@ -14,10 +14,9 @@
             android:layout_height="wrap_content">
             <ImageView
                 android:padding="5dp"
-                android:src="@android:drawable/stat_sys_download_done"
+                android:src="@drawable/download_icon"
                 android:layout_width="60dp"
-                android:layout_height="60dp"
-                app:tint="@color/black" />
+                android:layout_height="60dp" />
             <LinearLayout
                 android:layout_marginRight="80dp"
                 android:orientation="vertical"
