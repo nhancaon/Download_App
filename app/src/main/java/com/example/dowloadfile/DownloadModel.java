@@ -10,15 +10,7 @@ public class DownloadModel {
     String file_size;
     boolean is_paused;
 
-    public DownloadModel(long id, long downloadId, String title, String file_path, String progress, String status, String file_size, boolean is_paused) {
-        this.id = id;
-        this.downloadId = downloadId;
-        this.title = title;
-        this.file_path = file_path;
-        this.progress = progress;
-        this.status = status;
-        this.file_size = file_size;
-        this.is_paused = is_paused;
+    public DownloadModel() {
     }
 
     public long getId() {

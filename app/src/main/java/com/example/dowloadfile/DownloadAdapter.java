@@ -53,7 +53,6 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         RecyclerView.ViewHolder vh;
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.download_row, parent, false);
-        Log.d("TAG","11111111111111");
         vh = new DownloadViewHolder(view);
         return vh;
     }
@@ -152,7 +151,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             if (downloadid == downloadModel.getDownloadId()) {
                 downloadModels.get(i).setStatus(message);
                 notifyItemChanged(i);
-                comp=true;
+                comp = true;
             }
             i++;
         }
