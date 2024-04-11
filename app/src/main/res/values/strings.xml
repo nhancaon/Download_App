@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">DowloadFile</string>
+    <string name="title">Advanced Download Manager</string>
+    <string name="next_update">This operation will be updated soon!</string>
+    <string name="paste">PASTE</string>
+    <string name="editor">Editor</string>
+    <string name="link">Link</string>
+    <string name="hintLink">http://google.docx</string>
+    <string name="fileName">Name</string>
+    <string name="hintFileName">Document 1</string>
+    <string-array name="tab_titles">
+        <item>Exit</item>
+        <item>Other</item>
+        <item>URL</item>
+        <item>Add</item>
+        <item>Queue</item>
+        <item>Done</item>
+        <item>Menu</item>
+    </string-array>
 </resources>

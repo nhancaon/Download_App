@@ -3,6 +3,7 @@ package com.example.dowloadfile;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
     Context context;
     List<DownloadModel> downloadModels = new ArrayList<>();
 
@@ -30,7 +29,6 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public class DownloadViewHolder extends RecyclerView.ViewHolder {
-
         TextView file_title;
         TextView file_size;
         ProgressBar file_progress;
@@ -50,12 +48,12 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         RecyclerView.ViewHolder vh;
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.download_row, parent, false);
+        Log.d("TAG","11111111111111");
         vh = new DownloadViewHolder(view);
         return vh;
     }
@@ -80,7 +78,6 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             downloadViewHolder.file_status.setText("Running");
         }
 
-
         downloadViewHolder.pause_resume.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,7 +89,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     if (!resumeDownload(downloadModel)) {
                         Toast.makeText(context, "Failed to Resume", Toast.LENGTH_SHORT).show();
                     }
-                    notifyItemChanged(position);
+                    notifyItemChanged(holder.getAdapterPosition());
                 } else {
                     downloadModel.setIs_paused(true);
                     downloadViewHolder.pause_resume.setText("RESUME");
@@ -101,7 +98,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     if (!pauseDownload(downloadModel)) {
                         Toast.makeText(context, "Failed to Pause", Toast.LENGTH_SHORT).show();
                     }
-                    notifyItemChanged(position);
+                    notifyItemChanged(holder.getAdapterPosition());
                 }
             }
         });
@@ -161,6 +158,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
         return comp;
     }
+
     public void setChangeItemFilePath(String path, long id) {
         int i = 0;
         for (DownloadModel downloadModel : downloadModels) {
