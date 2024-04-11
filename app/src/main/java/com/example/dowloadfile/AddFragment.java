@@ -1,8 +1,10 @@
 package com.example.dowloadfile;
 
+import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,6 +19,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -24,7 +27,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -32,7 +41,15 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.auth.api.signin.internal.Storage;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,7 +64,12 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     RecyclerView data_list;
     EditText fileName;
     List<DownloadModel> downloadModels = new ArrayList<>();
+    private Uri fileUri;
     String[] tabTitles;
+    final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Download File");
+    final private StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+    // Declare activityResultLauncher as a class-level variable
+    private ActivityResultLauncher<Intent> activityResultLauncher;
 
     public AddFragment(String[] tabTitles) {
         this.tabTitles = tabTitles;
@@ -69,6 +91,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         });
         downloadAdapter = new DownloadAdapter(requireContext(), downloadModels);
         data_list.setAdapter(downloadAdapter);
+
         return view;
     }
 
@@ -98,6 +121,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 if(tab.getPosition()==0){
+                    requireActivity().finish();
                     System.exit(0);
                 }
             }
@@ -112,14 +136,42 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
 
             }
         });
-
-//        newsArrayList = new ArrayList<>();
-//        // Change the initial progress value from "progress" to "0"
-//        newsArrayList.add(new DownloadModel(1, 1, "society", "///", "0", "status", "dsdsd", false));
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    }
+
+    /// Outside onViewCreated
+    private void uploadToFirebase(Uri uri){
+        final StorageReference imageReference = storageReference.child(System.currentTimeMillis() + "." + getFileExtension(uri));
+
+        imageReference.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                imageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        DownloadModel downloadModel = new DownloadModel();
+                        String key = databaseReference.push().getKey();
+                        Log.d("KEY databaseReference:", key);
+                        databaseReference.child(key).setValue(downloadModel);
+                        Toast.makeText(requireContext(), "Uploaded", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(requireContext(), "Failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private String getFileExtension(Uri fileUri){
+        ContentResolver contentResolver = requireContext().getContentResolver();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        return mime.getExtensionFromMimeType(contentResolver.getType(fileUri));
     }
 
     /////////////////////////
@@ -192,10 +244,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     }
 
     private void downloadFile(String url) {
-//        String filename = URLUtil.guessFileName(url,null,null);
         String filename = fileName.getText().toString();
         String downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
-
         File file = new File(downloadPath,filename);
 
         DownloadManager.Request request = null;
@@ -219,10 +269,10 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                     .setAllowedOverRoaming(true);
         }
 
-        DownloadManager downloadManager = (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
+        DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
         long downloadId = downloadManager.enqueue(request);
 
-        final DownloadModel downloadModel = new DownloadModel(1, 1, "society", "///", "progress", "status", "dsdsd", false);
+        final DownloadModel downloadModel = new DownloadModel();
         downloadModel.setId(11);
         downloadModel.setStatus("Downloading");
         downloadModel.setTitle(filename);
@@ -252,7 +302,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         }
 
         private void downloadFileProcess(String downloadId) {
-            DownloadManager downloadManager = (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
+            DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
             boolean downloading = true;
 
             while (downloading) {
@@ -339,8 +389,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
             if (comp) {
                 DownloadManager.Query query = new DownloadManager.Query();
                 query.setFilterById(id);
-                DownloadManager downloadManager = (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
-                Cursor cursor = downloadManager.query(query);
+                DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                Cursor cursor = downloadManager.query(new DownloadManager.Query().setFilterById(id));
 
                 if (cursor != null && cursor.moveToFirst()) {
                     int localUriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI);
@@ -348,6 +398,9 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                     if (localUriIndex >= 0) {
                         String downloaded_path = cursor.getString(localUriIndex);
                         downloadAdapter.setChangeItemFilePath(downloaded_path, id);
+                        Log.d("downloaded_path: ", downloaded_path);
+                        // Upload the downloaded file to Firebase
+                        uploadToFirebase(Uri.parse(downloaded_path));
                     } else {
                         // Handle the case where the COLUMN_LOCAL_URI column doesn't exist
                     }

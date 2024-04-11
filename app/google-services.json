@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "583182376473",
+    "project_id": "dowloadfile-a754f",
+    "storage_bucket": "dowloadfile-a754f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:583182376473:android:f2e4df6d5b416d83b91488",
+        "android_client_info": {
+          "package_name": "com.example.dowloadfile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYbe7TMfrBeI4yf5uvIxQEjQYSNEhxdsk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
