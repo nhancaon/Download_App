@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,21 +18,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
-import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -59,21 +51,22 @@ import java.util.List;
  * A simple {@link Fragment} subclass.
  */
 public class AddFragment extends Fragment implements AdapterView.OnItemClickListener {
-    DownloadAdapter downloadAdapter;
+    String[] tabTitles;
+    String file_name, status, progress, file_size, file_path;
+    long downloadId;
+    EditText fileName;
+    EditText edtLink;
+    List<DownloadModel> downloadModels = new ArrayList<>();
     Button add_download_list;
     RecyclerView data_list;
-    EditText fileName;
-    List<DownloadModel> downloadModels = new ArrayList<>();
-    private Uri fileUri;
-    String[] tabTitles;
-    final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Download File");
+    DownloadAdapter downloadAdapter;
+    final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Upload Firebase downloadedFile");
     final private StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-    // Declare activityResultLauncher as a class-level variable
-    private ActivityResultLauncher<Intent> activityResultLauncher;
 
     public AddFragment(String[] tabTitles) {
         this.tabTitles = tabTitles;
     }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,@Nullable ViewGroup container,@Nullable Bundle savedInstanceState) {
@@ -91,7 +84,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         });
         downloadAdapter = new DownloadAdapter(requireContext(), downloadModels);
         data_list.setAdapter(downloadAdapter);
-
         return view;
     }
 
@@ -120,7 +112,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                if(tab.getPosition()==0){
+                if(tab.getPosition() == 0){
                     requireActivity().finish();
                     System.exit(0);
                 }
@@ -144,7 +136,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
 
     /// Outside onViewCreated
     private void uploadToFirebase(Uri uri){
-        final StorageReference imageReference = storageReference.child(System.currentTimeMillis() + "." + getFileExtension(uri));
+        final StorageReference imageReference = storageReference.child(System.currentTimeMillis() + "." + getFileExtension(Uri.parse(file_path)));
 
         imageReference.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -153,10 +145,18 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                     @Override
                     public void onSuccess(Uri uri) {
                         DownloadModel downloadModel = new DownloadModel();
+                        downloadModel.setId(downloadModel.getId());
+                        downloadModel.setStatus(status);
+                        downloadModel.setTitle(file_name);
+                        downloadModel.setFile_size(file_size);
+                        downloadModel.setProgress(progress);
+                        downloadModel.setIs_paused(true);
+                        downloadModel.setDownloadId(downloadId);
+                        downloadModel.setFile_path(file_path);
+
                         String key = databaseReference.push().getKey();
-                        Log.d("KEY databaseReference:", key);
                         databaseReference.child(key).setValue(downloadModel);
-                        Toast.makeText(requireContext(), "Uploaded", Toast.LENGTH_LONG).show();
+                        Toast.makeText(requireActivity(), "Uploaded", Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -168,11 +168,40 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         });
     }
 
-    private String getFileExtension(Uri fileUri){
-        ContentResolver contentResolver = requireContext().getContentResolver();
-        MimeTypeMap mime = MimeTypeMap.getSingleton();
-        return mime.getExtensionFromMimeType(contentResolver.getType(fileUri));
+    private String getFileExtension(Uri fileUri) {
+        String path = fileUri.toString();
+
+        // Extract the file extension based on the type of URI
+        if (path.startsWith("file://")) {
+            // Local file path
+            File file = new File(path);
+            String fileName = file.getName();
+            int lastDotIndex = fileName.lastIndexOf('.');
+            if (lastDotIndex != -1 && lastDotIndex < fileName.length() - 1) {
+                return fileName.substring(lastDotIndex + 1);
+            }
+        } else {
+            // Web URL
+            int lastDotIndex = path.lastIndexOf('.');
+            if (lastDotIndex != -1 && lastDotIndex < path.length() - 1) {
+                String extension = path.substring(lastDotIndex + 1);
+                // Ensure that the extension does not contain any query parameters or slashes
+                int queryParamIndex = extension.indexOf('?');
+                if (queryParamIndex != -1) {
+                    extension = extension.substring(0, queryParamIndex);
+                }
+                int slashIndex = extension.indexOf('/');
+                if (slashIndex != -1) {
+                    extension = extension.substring(0, slashIndex);
+                }
+                return extension;
+            }
+        }
+
+        // If no file extension is found, return null
+        return null;
     }
+
 
     /////////////////////////
     private void handlePDFFile(Intent intent) {
@@ -211,7 +240,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         View view = getLayoutInflater().inflate(R.layout.input_dialog, null);
         al.setView(view);
 
-        final EditText editText = view.findViewById(R.id.input);
+        edtLink = view.findViewById(R.id.edtLink);
         fileName = view.findViewById(R.id.edtFileName);
         Button paste = view.findViewById(R.id.paste);
 
@@ -221,7 +250,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 ClipboardManager clipboardManager = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
                 try {
                     CharSequence charSequence = clipboardManager.getPrimaryClip().getItemAt(0).getText();
-                    editText.setText(charSequence);
+                    edtLink.setText(charSequence);
+                    file_path = edtLink.getText().toString();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -231,7 +261,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         al.setPositiveButton("Download", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                downloadFile(editText.getText().toString());
+                downloadFile(file_path);
             }
         });
 
@@ -244,14 +274,14 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     }
 
     private void downloadFile(String url) {
-        String filename = fileName.getText().toString();
+        file_name = fileName.getText().toString();
         String downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
-        File file = new File(downloadPath,filename);
+        File file = new File(downloadPath,file_name);
 
         DownloadManager.Request request = null;
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
             request = new DownloadManager.Request(Uri.parse(url))
-                    .setTitle(filename)
+                    .setTitle(file_name)
                     .setDescription("Downloading")
                     .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
                     .setDestinationUri(Uri.fromFile(file))
@@ -261,7 +291,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         }
         else{
             request = new DownloadManager.Request(Uri.parse(url))
-                    .setTitle(filename)
+                    .setTitle(file_name)
                     .setDescription("Downloading")
                     .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
                     .setDestinationUri(Uri.fromFile(file))
@@ -270,12 +300,12 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         }
 
         DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
-        long downloadId = downloadManager.enqueue(request);
+        downloadId = downloadManager.enqueue(request);
 
         final DownloadModel downloadModel = new DownloadModel();
         downloadModel.setId(11);
         downloadModel.setStatus("Downloading");
-        downloadModel.setTitle(filename);
+        downloadModel.setTitle(file_name);
         downloadModel.setFile_size("0");
         downloadModel.setProgress("0");
         downloadModel.setIs_paused(false);
@@ -292,7 +322,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     public class DownloadStatusTask extends AsyncTask<String, String, String> {
         DownloadModel downloadModel;
         public DownloadStatusTask(DownloadModel downloadModel){
-            this.downloadModel=downloadModel;
+            this.downloadModel = downloadModel;
         }
 
         @Override
@@ -342,14 +372,17 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
             }
         }
 
-
         @Override
         protected void onProgressUpdate(final String... values) {
             super.onProgressUpdate(values);
             this.downloadModel.setFile_size(bytesIntoHumanReadable(Long.parseLong(values[1])));
+            file_size = bytesIntoHumanReadable(Long.parseLong(values[1]));
+
             this.downloadModel.setProgress(values[0]);
+            progress = values[0];
             if (!downloadModel.getStatus().equalsIgnoreCase("PAUSE") && !downloadModel.getStatus().equalsIgnoreCase("RESUME")) {
                 downloadModel.setStatus(values[2]);
+                status = values[2];
             }
             downloadAdapter.changeItem(downloadModel.getDownloadId());
         }
