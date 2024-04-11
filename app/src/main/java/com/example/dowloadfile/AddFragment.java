@@ -25,7 +25,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -197,11 +196,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 return extension;
             }
         }
-
-        // If no file extension is found, return null
         return null;
     }
-
 
     /////////////////////////
     private void handlePDFFile(Intent intent) {
@@ -363,7 +359,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                         String statusMessage = getStatusMessage(status);
                         publishProgress(new String[]{String.valueOf(progress), String.valueOf(bytes_downloaded), statusMessage});
                     }
-
                     cursor.close();
                 } else {
                     // Handle the case where the cursor is null or empty
@@ -437,7 +432,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                     } else {
                         // Handle the case where the COLUMN_LOCAL_URI column doesn't exist
                     }
-
                     cursor.close();
                 } else {
                     // Handle the case where the cursor is null or empty
