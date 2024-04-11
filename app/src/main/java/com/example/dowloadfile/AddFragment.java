@@ -45,6 +45,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     DownloadAdapter downloadAdapter;
     Button add_download_list;
     RecyclerView data_list;
+    EditText fileName;
     List<DownloadModel> downloadModels = new ArrayList<>();
     String[] tabTitles;
 
@@ -159,6 +160,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         al.setView(view);
 
         final EditText editText = view.findViewById(R.id.input);
+        fileName = view.findViewById(R.id.edtFileName);
         Button paste = view.findViewById(R.id.paste);
 
         paste.setOnClickListener(new View.OnClickListener() {
@@ -178,7 +180,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 downloadFile(editText.getText().toString());
-                dialog.dismiss();
             }
         });
 
@@ -191,7 +192,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     }
 
     private void downloadFile(String url) {
-        String filename = URLUtil.guessFileName(url,null,null);
+//        String filename = URLUtil.guessFileName(url,null,null);
+        String filename = fileName.getText().toString();
         String downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
 
         File file = new File(downloadPath,filename);
@@ -300,7 +302,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 downloadModel.setStatus(values[2]);
             }
             downloadAdapter.changeItem(downloadModel.getDownloadId());
-
         }
     }
 

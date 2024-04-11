@@ -6,17 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".AddFragment">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/data_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="48dp"/>
+
     <Button
         android:id="@+id/add_download_list"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="55dp"
+        android:layout_gravity="bottom"
         android:text="ADD DOWNLOAD URL"
         style="@style/Widget.AppCompat.Button.Colored"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/data_list"
-        android:layout_marginTop="48dp"/>
 
 </FrameLayout>
