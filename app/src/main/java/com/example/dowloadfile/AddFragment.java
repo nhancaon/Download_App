@@ -93,6 +93,24 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 tab.setCustomView(customTabView);
             }
         }
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if(tab.getPosition()==0){
+                    System.exit(0);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
 
 //        newsArrayList = new ArrayList<>();
 //        // Change the initial progress value from "progress" to "0"
