@@ -1,4 +1,4 @@
-package com.example.dowloadfile;
+package com.example.dowloadfile.Model;
 
 public class DownloadModel {
     long id;

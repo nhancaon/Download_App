@@ -1,6 +1,6 @@
-package com.example.dowloadfile;
+package com.example.dowloadfile.Fragment;
 
-import android.app.Activity;
+import android.Manifest;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -18,6 +19,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
+import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,11 +31,19 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.auth.api.signin.internal.Storage;
+import com.example.dowloadfile.Adapter.DownloadAdapter;
+import com.example.dowloadfile.Model.DownloadModel;
+import com.example.dowloadfile.R;
+import com.example.dowloadfile.Utils.DownloadDBHelper;
+import com.example.dowloadfile.Utils.ItemClickListener;
+import com.example.dowloadfile.Utils.PathUtil;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.tabs.TabLayout;
@@ -42,6 +53,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +62,9 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AddFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class AddFragment extends Fragment implements AdapterView.OnItemClickListener, ItemClickListener {
+    private static final int PERMISSION_REQUEST_CODE = 101;
+    DownloadDBHelper dbHelper;
     String[] tabTitles;
     String file_name, status, progress, file_size, file_path;
     long downloadId;
@@ -70,9 +85,11 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,@Nullable ViewGroup container,@Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add, container, false);
+        dbHelper = new DownloadDBHelper(requireActivity().getApplicationContext());
+        restoreDownloadData();
+
         add_download_list = view.findViewById(R.id.add_download_list);
         data_list = view.findViewById(R.id.data_list);
-
         data_list.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         add_download_list.setOnClickListener(new View.OnClickListener() {
@@ -81,8 +98,31 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 showInputDialog();
             }
         });
-        downloadAdapter = new DownloadAdapter(requireContext(), downloadModels);
+        downloadAdapter = new DownloadAdapter(requireContext(), downloadModels,this);
         data_list.setAdapter(downloadAdapter);
+
+        Intent intent=requireActivity().getIntent();
+        if(intent!=null){
+            String action=intent.getAction();
+            String type=intent.getType();
+            if(Intent.ACTION_SEND.equals(action) && type!=null){
+                if(type.equalsIgnoreCase("text/plain")){
+                    handleTextData(intent);
+                }
+                else if(type.startsWith("image/")){
+                    handleImage(intent);
+                }
+                else if(type.equalsIgnoreCase("application/pdf")){
+                    handlePdfFile(intent);
+                }
+            }
+            else if(Intent.ACTION_SEND_MULTIPLE.equals(action) && type!=null){
+                if(type.startsWith("image/")){
+                    handleMultipleImage(intent);
+                }
+            }
+        }
+
         return view;
     }
 
@@ -199,24 +239,23 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         return null;
     }
 
-    /////////////////////////
-    private void handlePDFFile(Intent intent) {
-        Uri pdf_file = intent.getParcelableExtra(Intent.EXTRA_STREAM);
-        if(pdf_file != null) {
-            Log.d("Pdf File Path : ", "" + pdf_file.getPath());
+    private void handlePdfFile(Intent intent) {
+        Uri pdffile = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        if (pdffile != null) {
+            Log.d("Pdf File Path : ", "" + pdffile.getPath());
         }
     }
 
     private void handleImage(Intent intent) {
         Uri image = intent.getParcelableExtra(Intent.EXTRA_STREAM);
-        if(image != null) {
+        if (image != null) {
             Log.d("Image File Path : ", "" + image.getPath());
         }
     }
 
     private void handleTextData(Intent intent) {
         String textdata = intent.getStringExtra(Intent.EXTRA_TEXT);
-        if(textdata != null) {
+        if (textdata != null) {
             Log.d("Text Data : ", "" + textdata);
             downloadFile(textdata);
         }
@@ -224,9 +263,9 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
 
     private void handleMultipleImage(Intent intent) {
         ArrayList<Uri> imageList = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-        if(imageList!=null) {
+        if (imageList != null) {
             for (Uri uri : imageList) {
-                Log.d("Path ","" + uri.getPath());
+                Log.d("Path ", "" + uri.getPath());
             }
         }
     }
@@ -247,7 +286,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 try {
                     CharSequence charSequence = clipboardManager.getPrimaryClip().getItemAt(0).getText();
                     edtLink.setText(charSequence);
-                    file_path = edtLink.getText().toString();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -257,7 +295,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         al.setPositiveButton("Download", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                downloadFile(file_path);
+                downloadFile(edtLink.getText().toString());
             }
         });
 
@@ -270,7 +308,9 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     }
 
     private void downloadFile(String url) {
-        file_name = fileName.getText().toString();
+        String nameFromURL = URLUtil.guessFileName(url, null, null);
+        String extension = FilenameUtils.getExtension(nameFromURL);
+        String file_name = fileName.getText().toString() + "." + extension;
         String downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
         File file = new File(downloadPath,file_name);
 
@@ -299,7 +339,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         downloadId = downloadManager.enqueue(request);
 
         final DownloadModel downloadModel = new DownloadModel();
-        downloadModel.setId(11);
         downloadModel.setStatus("Downloading");
         downloadModel.setTitle(file_name);
         downloadModel.setFile_size("0");
@@ -428,13 +467,20 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                         downloadAdapter.setChangeItemFilePath(downloaded_path, id);
                         Log.d("downloaded_path: ", downloaded_path);
                         // Upload the downloaded file to Firebase
-                        uploadToFirebase(Uri.parse(downloaded_path));
+                        //uploadToFirebase(Uri.parse(downloaded_path));
                     } else {
                         // Handle the case where the COLUMN_LOCAL_URI column doesn't exist
                     }
                     cursor.close();
                 } else {
                     // Handle the case where the cursor is null or empty
+                }
+                for (DownloadModel downloadModel : downloadModels) {
+                    if (downloadModel.getDownloadId() == id) {
+                        // Save the download to the database
+                        dbHelper.insertDownload(downloadModel);
+                        break;
+                    }
                 }
             }
         }
@@ -483,6 +529,125 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
 
         } else {
             return bytes + " Bytes";
+        }
+    }
+    private void restoreDownloadData() {
+        downloadModels.clear();
+        downloadModels.addAll(dbHelper.getAllDownload());
+    }
+
+    @Override
+    public void onCLickItem(String file_path) {
+        Log.d("File Path : ", "" + file_path);
+        openFile(file_path);
+    }
+
+    @Override
+    public void onShareClick(DownloadModel downloadModel) {
+        File file = new File(downloadModel.getFile_path().replaceAll("file:///", ""));
+        Log.d("File Path", "" + file.getAbsolutePath());
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        String ext = MimeTypeMap.getFileExtensionFromUrl(file.getName());
+        String type = mimeTypeMap.getExtensionFromMimeType(ext);
+
+        if (type == null) {
+            type = "*/*";
+        }
+
+        try {
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.putExtra(Intent.EXTRA_TEXT, "Sharing File from File Downloader");
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                Uri path = FileProvider.getUriForFile(requireActivity().getApplicationContext(),
+                        "com.example.dowloadfile", file);
+                intent.putExtra(Intent.EXTRA_STREAM, path);
+            } else {
+                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+            }
+            intent.setType("*/*");
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(requireActivity().getApplicationContext(), "No Activity Availabe to Handle File",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openFile(String fileurl) {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (!checkPermission()) {
+                requestPermission();
+                Toast.makeText(requireActivity().getApplicationContext(), "Please Allow Permission to Open File",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+        }
+
+        try {
+            fileurl = PathUtil.getPath(requireActivity().getApplicationContext(), Uri.parse(fileurl));
+
+            File file = new File(fileurl);
+            MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+            String ext = MimeTypeMap.getFileExtensionFromUrl(file.getName());
+            String type = mimeTypeMap.getMimeTypeFromExtension(ext);
+
+            if (type == null) {
+                type = "*/*";
+            }
+
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                Uri contne = FileProvider.getUriForFile(requireActivity().getApplicationContext(),
+                        "com.example.dowloadfile", file);
+                intent.setDataAndType(contne, type);
+            } else {
+                intent.setDataAndType(Uri.fromFile(file), type);
+            }
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(requireActivity().getApplicationContext(), "Unable to Open File", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
+    private void requestPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            Toast.makeText(requireActivity().getApplicationContext(), "Please Give Permission to Upload File",
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            ActivityCompat.requestPermissions(requireActivity(),
+                    new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(requireActivity().getApplicationContext(), "Permission Successfull",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(requireActivity().getApplicationContext(), "Permission Failed", Toast.LENGTH_SHORT)
+                            .show();
+                }
+        }
+    }
+
+    private boolean checkPermission() {
+        int result = ContextCompat.checkSelfPermission(requireActivity().getApplicationContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (result == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            return false;
         }
     }
 }

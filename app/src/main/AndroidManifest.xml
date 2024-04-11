@@ -17,7 +17,7 @@
         android:theme="@style/Theme.Design.Light.NoActionBar"
         tools:targetApi="31">
         <activity
-            android:name=".AddFragment"
+            android:name=".Fragment.AddFragment"
             android:exported="false">
         </activity>
         <activity

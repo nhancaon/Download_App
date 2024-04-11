@@ -1,9 +1,8 @@
-package com.example.dowloadfile;
+package com.example.dowloadfile.Adapter;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,16 +15,22 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.dowloadfile.Model.DownloadModel;
+import com.example.dowloadfile.R;
+import com.example.dowloadfile.Utils.ItemClickListener;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     Context context;
     List<DownloadModel> downloadModels = new ArrayList<>();
+    ItemClickListener clickListener;
 
-    public DownloadAdapter(Context context, List<DownloadModel> downloadModels) {
+    public DownloadAdapter(Context context, List<DownloadModel> downloadModels,ItemClickListener itemClickListener) {
         this.context = context;
         this.downloadModels = downloadModels;
+        this.clickListener=itemClickListener;
     }
 
     public class DownloadViewHolder extends RecyclerView.ViewHolder {
@@ -99,6 +104,19 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     }
                     notifyItemChanged(holder.getAdapterPosition());
                 }
+            }
+        });
+        downloadViewHolder.main_rel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickListener.onCLickItem(downloadModel.getFile_path());
+            }
+        });
+
+        downloadViewHolder.sharefile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickListener.onShareClick(downloadModel);
             }
         });
     }

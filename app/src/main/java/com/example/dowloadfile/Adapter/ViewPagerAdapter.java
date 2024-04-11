@@ -1,4 +1,4 @@
-package com.example.dowloadfile;
+package com.example.dowloadfile.Adapter;
 
 import android.content.Context;
 
@@ -6,6 +6,13 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+
+import com.example.dowloadfile.Fragment.AddFragment;
+import com.example.dowloadfile.Fragment.DoneFragment;
+import com.example.dowloadfile.Fragment.MenuFragment;
+import com.example.dowloadfile.Fragment.OtherFragment;
+import com.example.dowloadfile.Fragment.QueueFragment;
+import com.example.dowloadfile.Fragment.URLFragment;
 
 public class ViewPagerAdapter extends FragmentPagerAdapter {
     private Context context;
