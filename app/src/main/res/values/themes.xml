@@ -1,9 +1,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.DowloadFile" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="Base.Theme.DowloadFile" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.DowloadFile" parent="Base.Theme.DowloadFile" />
+    <style name="Theme.DowloadFile" parent="Theme.MaterialComponents.Light.NoActionBar" />
 </resources>

@@ -2,11 +2,15 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    app:cardElevation="2dp"
+    app:cardCornerRadius="11dp"
+    app:cardUseCompatPadding="true">
     <RelativeLayout
         android:id="@+id/main_rel"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@drawable/gradient_color">
         <LinearLayout
             android:id="@+id/line1"
             android:layout_width="match_parent"
@@ -29,7 +33,9 @@
                     android:layout_height="wrap_content"
                     style="@style/TextAppearance.AppCompat.Subhead"
                     android:padding="5dp"
-                    android:text="File Name " />
+                    android:text="File Name "
+                    android:textStyle="bold"
+                    android:textColor="#ffffff"/>
                 <ProgressBar
                     android:id="@+id/file_progress"
                     android:layout_width="match_parent"
@@ -46,7 +52,9 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Downloaded : 15MB"
-                        style="@style/TextAppearance.AppCompat.Caption" />
+                        style="@style/TextAppearance.AppCompat.Caption"
+                        android:textStyle="bold"
+                        android:textColor="#ffffff"/>
                     <TextView
                         android:id="@+id/file_status"
                         android:layout_width="match_parent"
@@ -54,7 +62,9 @@
                         style="@style/TextAppearance.AppCompat.Caption"
                         android:layout_weight="1"
                         android:text="Pending"
-                        android:gravity="end" />
+                        android:gravity="end"
+                        android:textStyle="bold"
+                        android:textColor="#ffffff"/>/>
                 </LinearLayout>
             </LinearLayout>
             <LinearLayout
@@ -75,15 +85,22 @@
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
                     android:text="SHARE"
-                    style="@style/Widget.AppCompat.Button.Colored"
-                    android:padding="0dp" />
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:padding="0dp"
+                    android:textStyle="bold"
+                    android:textColor="#ffffff"
+                    android:textSize="13sp"
+                    app:rippleColor="#ffffff"
+                    app:strokeColor="#ffffff"
+                    android:backgroundTint="#ffffff" />
             </LinearLayout>
+
         </LinearLayout>
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="10dp"
-            android:background="#606060"
+            android:background="#FFFFFF"
             android:layout_below="@id/line1"/>
     </RelativeLayout>
 </androidx.cardview.widget.CardView>
