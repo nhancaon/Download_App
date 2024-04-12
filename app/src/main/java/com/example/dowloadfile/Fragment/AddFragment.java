@@ -288,6 +288,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 try {
                     CharSequence charSequence = clipboardManager.getPrimaryClip().getItemAt(0).getText();
                     edtLink.setText(charSequence);
+                    file_path=edtLink.getText().toString();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -478,7 +479,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                         downloadAdapter.setChangeItemFilePath(downloaded_path, id);
                         Log.d("downloaded_path: ", downloaded_path);
                         // Upload the downloaded file to Firebase
-                        //uploadToFirebase(Uri.parse(downloaded_path));
+                        uploadToFirebase(Uri.parse(downloaded_path));
                     } else {
                         // Handle the case where the COLUMN_LOCAL_URI column doesn't exist
                     }
