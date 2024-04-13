@@ -56,8 +56,6 @@ import com.google.firebase.storage.UploadTask;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -188,7 +186,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                         DownloadModel downloadModel = new DownloadModel();
                         downloadModel.setId(downloadModel.getId());
                         downloadModel.setStatus(status);
-                        downloadModel.setTitle(file_name);
+                        downloadModel.setTitle(extractFileName(file_name));
                         downloadModel.setFile_size(file_size);
                         downloadModel.setProgress(progress);
                         downloadModel.setIs_paused(true);
@@ -207,6 +205,24 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 Toast.makeText(requireContext(), "Failed", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    //Extract file type
+    public static String extractFileName(String title) {
+        // Split the title by dot (.)
+        String[] parts = title.split("\\.");
+
+        // If there's only one part or the last part is empty, return the original title
+        if (parts.length <= 1 || parts[parts.length - 1].isEmpty()) {
+            return title;
+        }
+
+        // Check if the last part has more dots
+        String lastPart = parts[parts.length - 1];
+        if (lastPart.indexOf('.') != lastPart.lastIndexOf('.')) {
+            return title;
+        }
+        return parts[0];
     }
 
     private String getFileExtension(Uri fileUri) {
@@ -288,7 +304,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 try {
                     CharSequence charSequence = clipboardManager.getPrimaryClip().getItemAt(0).getText();
                     edtLink.setText(charSequence);
-                    file_path=edtLink.getText().toString();
+                    file_path = edtLink.getText().toString();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -317,7 +333,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
             Toast.makeText(requireContext(), "Unsupported file type", Toast.LENGTH_SHORT).show();
             return;
         }
-        String file_name = fileName.getText().toString().trim();
+        file_name = fileName.getText().toString().trim();
         if (file_name.isEmpty()) {
             Toast.makeText(requireContext(), "File name cannot be empty", Toast.LENGTH_SHORT).show();
             return;

@@ -4,4 +4,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="primaryColor">#9BCF53</color>
     <color name="primaryDarkColor">#416D19</color>
+    <color name="blueItemGrid">#1679AB</color>
 </resources>
