@@ -43,50 +43,37 @@ public class DownloadDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-//    public void insertDownload(DownloadModel downloadModel) {
-//        db=this.getWritableDatabase();
-//        ContentValues values = new ContentValues();
-//        values.put("download_id", downloadModel.getDownloadId());
-//        values.put("title", downloadModel.getTitle());
-//        values.put("file_path", downloadModel.getFile_path());
-//        values.put("progress", downloadModel.getProgress());
-//        values.put("status", downloadModel.getStatus());
-//        values.put("file_size", downloadModel.getFile_size());
-//        values.put("is_paused", downloadModel.isIs_paused() ? 1 : 0);
-//
-//        db.insert("downloads", null, values);
-//        getAllDownload();
-//    }
-public void insertDownload(DownloadModel downloadModel) {
-    try {
-        db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("download_id", downloadModel.getDownloadId());
-        values.put("title", downloadModel.getTitle());
-        values.put("file_path", downloadModel.getFile_path());
-        values.put("progress", downloadModel.getProgress());
-        values.put("status", downloadModel.getStatus());
-        values.put("file_size", downloadModel.getFile_size());
-        values.put("is_paused", downloadModel.isIs_paused() ? 1 : 0);
 
-        long result = db.insert("downloads", null, values);
-        if (result == -1) {
-            // Insert failed
-            Log.e("DownloadDBHelper", "Failed to insert download record");
-        } else {
-            // Insert successful
-            getAllDownload();
-        }
-    } catch (Exception e) {
-        e.printStackTrace();
-        Log.e("DownloadDBHelper", "Exception occurred while inserting download record: " + e.getMessage());
-    } finally {
-        // Close the database connection
-        if (db != null && db.isOpen()) {
-            db.close();
+    public void insertDownload(DownloadModel downloadModel) {
+        try {
+            db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put("download_id", downloadModel.getDownloadId());
+            values.put("title", downloadModel.getTitle());
+            values.put("file_path", downloadModel.getFile_path());
+            values.put("progress", downloadModel.getProgress());
+            values.put("status", downloadModel.getStatus());
+            values.put("file_size", downloadModel.getFile_size());
+            values.put("is_paused", downloadModel.isIs_paused() ? 1 : 0);
+
+            long result = db.insert("downloads", null, values);
+            if (result == -1) {
+                // Insert failed
+                Log.e("DownloadDBHelper", "Failed to insert download record");
+            } else {
+                // Insert successful
+                getAllDownload();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("DownloadDBHelper", "Exception occurred while inserting download record: " + e.getMessage());
+        } finally {
+            // Close the database connection
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
         }
     }
-}
 
     @SuppressLint("Range")
     public List<DownloadModel> getAllDownload() {
