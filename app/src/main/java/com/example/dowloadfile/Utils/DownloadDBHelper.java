@@ -75,6 +75,18 @@ public class DownloadDBHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void updateDownloadTitle(long id, String title){
+        db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("title", title);
+        db.update("downloads", values, "download_id=?", new String[]{String.valueOf(id)});
+    }
+
+    public void deleteDownload(long id){
+        db = this.getWritableDatabase();
+        db.delete("downloads","download_id=?", new String[]{String.valueOf(id)});
+    }
+
     @SuppressLint("Range")
     public List<DownloadModel> getAllDownload() {
         db=this.getWritableDatabase();

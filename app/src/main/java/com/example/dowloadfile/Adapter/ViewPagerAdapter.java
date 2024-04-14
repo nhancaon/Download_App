@@ -9,10 +9,6 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 import com.example.dowloadfile.Fragment.AddFragment;
 import com.example.dowloadfile.Fragment.DoneFragment;
-import com.example.dowloadfile.Fragment.MenuFragment;
-import com.example.dowloadfile.Fragment.OtherFragment;
-import com.example.dowloadfile.Fragment.QueueFragment;
-import com.example.dowloadfile.Fragment.URLFragment;
 
 public class ViewPagerAdapter extends FragmentPagerAdapter {
     private Context context;
@@ -30,17 +26,9 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
             case 0:
                 return new AddFragment(tabTitles);
             case 1:
-                return new OtherFragment();
-            case 2:
-                return new URLFragment();
-            case 3:
                 return new AddFragment(tabTitles);
-            case 4:
-                return new QueueFragment();
-            case 5:
+            case 2:
                 return new DoneFragment();
-            case 6:
-                return new MenuFragment();
             default:
                 return new AddFragment(tabTitles);
         }
@@ -48,6 +36,6 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        return 7;
+        return 3;
     }
 }

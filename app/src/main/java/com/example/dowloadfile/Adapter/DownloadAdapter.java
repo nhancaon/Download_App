@@ -3,34 +3,48 @@ package com.example.dowloadfile.Adapter;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dowloadfile.Model.DownloadModel;
 import com.example.dowloadfile.R;
+import com.example.dowloadfile.Utils.DownloadDBHelper;
 import com.example.dowloadfile.Utils.ItemClickListener;
+import com.example.dowloadfile.Utils.UpdateTitle;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     Context context;
-    List<DownloadModel> downloadModels = new ArrayList<>();
+    List<DownloadModel> downloadModels;
     ItemClickListener clickListener;
+    private DownloadDBHelper myDB;
+    private FragmentManager fragmentManager;
+    UpdateTitle updateTitle = new UpdateTitle();
 
-    public DownloadAdapter(Context context, List<DownloadModel> downloadModels,ItemClickListener itemClickListener) {
+    public DownloadAdapter(Context context, List<DownloadModel> downloadModels,
+                           ItemClickListener itemClickListener,
+                           DownloadDBHelper myDB,
+                           FragmentManager fragmentManager) {
         this.context = context;
         this.downloadModels = downloadModels;
-        this.clickListener=itemClickListener;
+        this.clickListener = itemClickListener;
+        this.myDB = myDB;
+        this.fragmentManager = fragmentManager;
     }
 
     public class DownloadViewHolder extends RecyclerView.ViewHolder {
@@ -57,7 +71,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         RecyclerView.ViewHolder vh;
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.download_row, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_download_row, parent, false);
         vh = new DownloadViewHolder(view);
         return vh;
     }
@@ -185,5 +199,29 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }
             i++;
         }
+    }
+
+    public Context getContext(){
+        return context;
+    }
+
+    public void deleteDownload(int position){
+        DownloadModel item = downloadModels.get(position);
+        myDB.deleteDownload(item.getDownloadId());
+        downloadModels.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    // Update downloaded file Title
+    public void updateDownloadTitle(int position){
+        DownloadModel item = downloadModels.get(position);
+
+        Bundle bundle = new Bundle();
+        bundle.putLong("download_id", item.getDownloadId());
+        bundle.putString("titleIncludeFileType", item.getTitle());
+
+        updateTitle.setArguments(bundle);
+        updateTitle.show(fragmentManager, updateTitle.getTag());
+        notifyItemChanged(position);
     }
 }

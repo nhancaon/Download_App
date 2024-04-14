@@ -35,6 +35,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -44,6 +45,7 @@ import com.example.dowloadfile.R;
 import com.example.dowloadfile.Utils.DownloadDBHelper;
 import com.example.dowloadfile.Utils.ItemClickListener;
 import com.example.dowloadfile.Utils.PathUtil;
+import com.example.dowloadfile.Utils.RecyclerViewTouchHelper;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.tabs.TabLayout;
@@ -77,6 +79,10 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Upload Firebase downloadedFile");
     final private StorageReference storageReference = FirebaseStorage.getInstance().getReference();
 
+    public AddFragment() {
+        // Default constructor
+    }
+
     public AddFragment(String[] tabTitles) {
         this.tabTitles = tabTitles;
     }
@@ -98,14 +104,18 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 showInputDialog();
             }
         });
-        downloadAdapter = new DownloadAdapter(requireContext(), downloadModels,this);
+
+        downloadAdapter = new DownloadAdapter(requireContext(),downloadModels, this, dbHelper, requireActivity().getSupportFragmentManager());
         data_list.setAdapter(downloadAdapter);
 
-        Intent intent=requireActivity().getIntent();
-        if(intent!=null){
-            String action=intent.getAction();
-            String type=intent.getType();
-            if(Intent.ACTION_SEND.equals(action) && type!=null){
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new RecyclerViewTouchHelper(downloadAdapter));
+        itemTouchHelper.attachToRecyclerView(data_list);
+
+        Intent intent = requireActivity().getIntent();
+        if(intent != null){
+            String action = intent.getAction();
+            String type = intent.getType();
+            if(Intent.ACTION_SEND.equals(action) && type != null){
                 if(type.equalsIgnoreCase("text/plain")){
                     handleTextData(intent);
                 }
@@ -122,7 +132,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 }
             }
         }
-
         return view;
     }
 
@@ -131,8 +140,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         super.onViewCreated(view, savedInstanceState);
         requireContext().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
-        // Assuming you have icons and text for each tab
-        int[] tabIcons = {R.drawable.ic_close, R.drawable.ic_settings, R.drawable.ic_url, R.drawable.ic_add, R.drawable.ic_download_queue, R.drawable.ic_complete, R.drawable.ic_menu};
+        // Icons and text for each tab
+        int[] tabIcons = {R.drawable.ic_close, R.drawable.ic_add, R.drawable.ic_complete};
         TabLayout tabLayout = requireActivity().findViewById(R.id.tab_layout);
 
         // Iterate through tabs and set custom view
@@ -195,7 +204,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
 
                         String key = databaseReference.push().getKey();
                         databaseReference.child(key).setValue(downloadModel);
-                        Toast.makeText(requireActivity(), "Uploaded", Toast.LENGTH_LONG).show();
+                        Toast.makeText(requireActivity(), "Firebase uploaded", Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -260,7 +269,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     private void handlePdfFile(Intent intent) {
         Uri pdffile = intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if (pdffile != null) {
-            Log.d("Pdf File Path : ", "" + pdffile.getPath());
+            Log.d("PDF File Path : ", "" + pdffile.getPath());
         }
     }
 
@@ -290,7 +299,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
 
     private void showInputDialog() {
         AlertDialog.Builder al = new AlertDialog.Builder(requireContext());
-        View view = getLayoutInflater().inflate(R.layout.input_dialog, null);
+        View view = getLayoutInflater().inflate(R.layout.activity_input_dialog, null);
         al.setView(view);
 
         edtLink = view.findViewById(R.id.edtLink);
@@ -654,24 +663,20 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(requireActivity().getApplicationContext(), "Permission Successfull",
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireActivity().getApplicationContext(), "Permission Successfull", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(requireActivity().getApplicationContext(), "Permission Failed", Toast.LENGTH_SHORT)
-                            .show();
+                    Toast.makeText(requireActivity().getApplicationContext(), "Permission Failed", Toast.LENGTH_SHORT).show();
                 }
         }
     }
 
     private boolean checkPermission() {
-        int result = ContextCompat.checkSelfPermission(requireActivity().getApplicationContext(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int result = ContextCompat.checkSelfPermission(requireActivity().getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (result == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {

@@ -9,13 +9,10 @@
     <string name="hintLink">http://google.docx</string>
     <string name="fileName">Name</string>
     <string name="hintFileName">Document 1</string>
+    <string name="hintUpdateTitle">Rename title</string>
     <string-array name="tab_titles">
         <item>Exit</item>
-        <item>Other</item>
-        <item>URL</item>
         <item>Add</item>
-        <item>Queue</item>
         <item>Done</item>
-        <item>Menu</item>
     </string-array>
 </resources>
