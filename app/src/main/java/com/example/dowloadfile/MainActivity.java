@@ -35,9 +35,9 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         // Set the listener for tab selection changes
         mTabLayout.addOnTabSelectedListener(this);
 
-        TabLayout.Tab tab = mTabLayout.getTabAt(3);
+        TabLayout.Tab tab = mTabLayout.getTabAt(1);
         if (tab != null) {
-            txtHeaderTab.setText(tabTitles[3]);
+            txtHeaderTab.setText(tabTitles[1]);
             tab.select();
         }
     }

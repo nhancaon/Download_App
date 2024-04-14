@@ -46,7 +46,7 @@ public class GridViewAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.grid_item, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_grid_firebase, parent, false);
             holder = new ViewHolder(convertView);
             convertView.setTag(holder);
         } else {
