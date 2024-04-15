@@ -29,11 +29,12 @@ import java.util.List;
 
 public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     Context context;
-    List<DownloadModel> downloadModels;
+    public List<DownloadModel> downloadModels;
     ItemClickListener clickListener;
     private DownloadDBHelper myDB;
     private FragmentManager fragmentManager;
-    UpdateTitle updateTitle = new UpdateTitle();
+
+    private String path;
 
     public DownloadAdapter(Context context, List<DownloadModel> downloadModels,
                            ItemClickListener itemClickListener,
@@ -206,9 +207,10 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public void deleteDownload(int position){
         DownloadModel item = downloadModels.get(position);
+        path = item.getFile_path();
 
         // Delete files from Files and Device Explorer (storage/emulated/0/Downloads and storage/self/primary/Downloads)
-        deleteInFiles_DeviceExplorer(item.getFile_path());
+        deleteInFiles_DeviceExplorer(path);
 
         // Delete files from SQLite database
         myDB.deleteDownload(item.getDownloadId());
@@ -234,15 +236,49 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     // Update downloaded file Title
     public void updateDownloadTitle(int position){
-        DownloadModel item = downloadModels.get(position);
+        final DownloadModel item = downloadModels.get(position);
 
         Bundle bundle = new Bundle();
         bundle.putLong("download_id", item.getDownloadId());
         bundle.putString("titleIncludeFileType", item.getTitle());
         bundle.putString("filePath", item.getFile_path());
 
+        UpdateTitle updateTitle = new UpdateTitle();
+        updateTitle.setOnTitleUpdateListener(new UpdateTitle.OnTitleUpdateListener() {
+            @Override
+            public void onTitleUpdated(String updatedTitle) {
+                String oldFilePath = item.getFile_path();
+                String newFilePath = "file:///storage/emulated/0/Download/";
+
+                updateFilenameInFiles_DeviceExplorer(oldFilePath, updatedTitle);
+                // Update the item's title and file path in the DownloadModel list
+                item.setTitle(updatedTitle);
+
+                item.setFile_path(newFilePath + updatedTitle);
+                path = newFilePath + updatedTitle;
+
+                notifyItemChanged(position);
+            }
+        });
         updateTitle.setArguments(bundle);
         updateTitle.show(fragmentManager, updateTitle.getTag());
         notifyItemChanged(position);
+    }
+
+    private void updateFilenameInFiles_DeviceExplorer(String oldFilePath, String newFileName) {
+        // Remove the scheme (file://) from the old file path
+        String cleanedFilePath = Uri.parse(oldFilePath).getPath();
+        File oldFile = new File(cleanedFilePath);
+        String parentDirectory = oldFile.getParent();
+
+        // Create a new File object with the new file name and the parent directory
+        File newFile = new File(parentDirectory, newFileName);
+        boolean renamed = oldFile.renameTo(newFile);
+
+        if (!renamed) {
+            // Handle the case where the file couldn't be renamed
+            Log.e("Rename Error", "Failed to rename file: " + oldFilePath);
+            return;
+        }
     }
 }
