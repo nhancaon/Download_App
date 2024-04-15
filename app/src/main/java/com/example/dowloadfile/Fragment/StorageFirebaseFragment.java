@@ -1,7 +1,6 @@
 package com.example.dowloadfile.Fragment;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import com.example.dowloadfile.Adapter.GridViewAdapter;
@@ -31,19 +28,19 @@ import java.util.Comparator;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DoneFragment extends Fragment {
+public class StorageFirebaseFragment extends Fragment {
     private GridView gridView;
     private ArrayList<DownloadModel> dataList;
     private GridViewAdapter adapter;
 
-    public DoneFragment() {
+    public StorageFirebaseFragment() {
         // Required empty public constructor
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_done, container, false);
+        View view = inflater.inflate(R.layout.fragment_firebase_storage, container, false);
         gridView = view.findViewById(R.id.gridView);
         dataList = new ArrayList<>();
         adapter = new GridViewAdapter(requireContext(), dataList);

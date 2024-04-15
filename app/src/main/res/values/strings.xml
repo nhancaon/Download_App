@@ -13,6 +13,6 @@
     <string-array name="tab_titles">
         <item>Exit</item>
         <item>Add</item>
-        <item>Done</item>
+        <item>Firebase retrieve</item>
     </string-array>
 </resources>
