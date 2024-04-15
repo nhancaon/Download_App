@@ -337,19 +337,33 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
 
     private void downloadFile(String url) {
         String nameFromURL = URLUtil.guessFileName(url, null, null);
+        Log.d("nameFromURL: ", nameFromURL);
         String extension = FilenameUtils.getExtension(nameFromURL);
+        Log.d("extension: ", extension);
+
         if (!isValidFileType(extension)) {
             Toast.makeText(requireContext(), "Unsupported file type", Toast.LENGTH_SHORT).show();
             return;
         }
+
         file_name = fileName.getText().toString().trim();
+
         if (file_name.isEmpty()) {
             Toast.makeText(requireContext(), "File name cannot be empty", Toast.LENGTH_SHORT).show();
             return;
         }
+
         file_name += "." + extension;
+        Log.d("file_name: ", file_name);
         String downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+        Log.d("downloadPath: ", downloadPath);
         File file = new File(downloadPath,file_name);
+        Log.d("filegetAbsolutePath: ", file.getAbsolutePath());
+        Log.d("filegetPath: ", file.getPath());
+        Log.d("request URL: ", Uri.parse(url).toString());
+        Log.d("Uri.fromFile(file): ", Uri.fromFile(file).toString());
+
+
 
         DownloadManager.Request request = null;
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
@@ -502,7 +516,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                     if (localUriIndex >= 0) {
                         String downloaded_path = cursor.getString(localUriIndex);
                         downloadAdapter.setChangeItemFilePath(downloaded_path, id);
-                        Log.d("downloaded_path: ", downloaded_path);
+                        Log.d("downloaded_path in Broadcast: ", downloaded_path);
                         // Upload the downloaded file to Firebase
                         uploadToFirebase(Uri.parse(downloaded_path));
                     } else {
@@ -568,6 +582,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
             return bytes + " Bytes";
         }
     }
+
     private void restoreDownloadData() {
         downloadModels.clear();
         downloadModels.addAll(dbHelper.getAllDownload());
