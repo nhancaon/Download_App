@@ -3,9 +3,11 @@ package com.example.dowloadfile.Utils;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,15 +22,15 @@ import com.example.dowloadfile.Model.DownloadModel;
 import com.example.dowloadfile.R;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import java.io.File;
 import java.util.List;
 
 public class UpdateTitle extends BottomSheetDialogFragment {
     public static final String TAG = "UpdateTitle";
     private EditText mEditText;
     private Button mSaveButton;
-    String titleIncludeFileType;
+    private String titleIncludeFileType, changedTitle;
     private DownloadDBHelper myDB;
-
     public static UpdateTitle newInstance(){
         return new UpdateTitle();
     }
@@ -81,15 +83,17 @@ public class UpdateTitle extends BottomSheetDialogFragment {
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String text = mEditText.getText().toString() + getFileType(titleIncludeFileType);
+                changedTitle = mEditText.getText().toString() + getFileType(titleIncludeFileType);
 
                 if(finalIsUpdate){
-                    myDB.updateDownloadTitle(bundle.getLong("download_id"), text);
+                    myDB.updateDownloadTitle(bundle.getLong("download_id"), changedTitle);
+                    Log.d("changedTitle", changedTitle);
+                    updateFilenameInFiles_DeviceExplorer(bundle.getString("filePath"), changedTitle);
                     Toast.makeText(requireContext(), "Title changed", Toast.LENGTH_LONG).show();
                 }
                 else{
                     DownloadModel item = new DownloadModel();
-                    item.setTitle(text);
+                    item.setTitle(changedTitle);
                     myDB.insertDownload(item);
                     Toast.makeText(requireContext(), "Title added", Toast.LENGTH_LONG).show();
                 }
@@ -97,7 +101,27 @@ public class UpdateTitle extends BottomSheetDialogFragment {
             }
         });
     }
+    private void updateFilenameInFiles_DeviceExplorer(String oldFilePath, String newFileName) {
+        // Remove the scheme (file://) from the old file path
+        String cleanedFilePath = Uri.parse(oldFilePath).getPath();
+        File oldFile = new File(cleanedFilePath);
 
+        // Get the parent directory of the old file
+        String parentDirectory = oldFile.getParent();
+
+        // Create a new File object with the new file name and the parent directory
+        File newFile = new File(parentDirectory, newFileName);
+
+        // Rename the old file to the new file
+        boolean renamed = oldFile.renameTo(newFile);
+
+        if (!renamed) {
+            // Handle the case where the file couldn't be renamed
+            Log.e("Rename Error", "Failed to rename file: " + oldFilePath);
+            return;
+        }
+
+    }
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);

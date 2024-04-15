@@ -239,6 +239,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         Bundle bundle = new Bundle();
         bundle.putLong("download_id", item.getDownloadId());
         bundle.putString("titleIncludeFileType", item.getTitle());
+        bundle.putString("filePath", item.getFile_path());
 
         updateTitle.setArguments(bundle);
         updateTitle.show(fragmentManager, updateTitle.getTag());
