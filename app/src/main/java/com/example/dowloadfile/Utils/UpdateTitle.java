@@ -26,13 +26,24 @@ import java.io.File;
 import java.util.List;
 
 public class UpdateTitle extends BottomSheetDialogFragment {
+    public interface OnTitleUpdateListener {
+        void onTitleUpdated(String updatedTitle);
+    }
+
     public static final String TAG = "UpdateTitle";
     private EditText mEditText;
     private Button mSaveButton;
-    private String titleIncludeFileType, changedTitle;
+    String titleIncludeFileType;
+    private OnTitleUpdateListener mListener;
+    private static String changedTitle = "";
     private DownloadDBHelper myDB;
-    public static UpdateTitle newInstance(){
+
+    public static UpdateTitle newInstance() {
         return new UpdateTitle();
+    }
+
+    public void setOnTitleUpdateListener(OnTitleUpdateListener listener) {
+        mListener = listener;
     }
 
     @Nullable
@@ -86,9 +97,11 @@ public class UpdateTitle extends BottomSheetDialogFragment {
                 changedTitle = mEditText.getText().toString() + getFileType(titleIncludeFileType);
 
                 if(finalIsUpdate){
+                    // Notify the listener with the updated title
+                    if (mListener != null) {
+                        mListener.onTitleUpdated(changedTitle);
+                    }
                     myDB.updateDownloadTitle(bundle.getLong("download_id"), changedTitle);
-                    Log.d("changedTitle", changedTitle);
-                    updateFilenameInFiles_DeviceExplorer(bundle.getString("filePath"), changedTitle);
                     Toast.makeText(requireContext(), "Title changed", Toast.LENGTH_LONG).show();
                 }
                 else{
@@ -101,27 +114,7 @@ public class UpdateTitle extends BottomSheetDialogFragment {
             }
         });
     }
-    private void updateFilenameInFiles_DeviceExplorer(String oldFilePath, String newFileName) {
-        // Remove the scheme (file://) from the old file path
-        String cleanedFilePath = Uri.parse(oldFilePath).getPath();
-        File oldFile = new File(cleanedFilePath);
 
-        // Get the parent directory of the old file
-        String parentDirectory = oldFile.getParent();
-
-        // Create a new File object with the new file name and the parent directory
-        File newFile = new File(parentDirectory, newFileName);
-
-        // Rename the old file to the new file
-        boolean renamed = oldFile.renameTo(newFile);
-
-        if (!renamed) {
-            // Handle the case where the file couldn't be renamed
-            Log.e("Rename Error", "Failed to rename file: " + oldFilePath);
-            return;
-        }
-
-    }
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
@@ -131,6 +124,7 @@ public class UpdateTitle extends BottomSheetDialogFragment {
         }
     }
 
+
     public String getFileType(String fileName) {
         if (fileName != null && fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0) {
             return "." + fileName.substring(fileName.lastIndexOf(".") + 1);
@@ -138,4 +132,5 @@ public class UpdateTitle extends BottomSheetDialogFragment {
             return "";
         }
     }
+
 }
