@@ -335,6 +335,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         al.show();
     }
 
+    // CAO LÀM SO SÁNH THỜI GIAN (Log ra consolde)
     private void downloadFile(String url) {
         String nameFromURL = URLUtil.guessFileName(url, null, null);
         String extension = FilenameUtils.getExtension(nameFromURL);
