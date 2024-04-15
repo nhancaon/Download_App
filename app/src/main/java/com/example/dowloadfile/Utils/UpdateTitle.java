@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,10 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
-import com.example.dowloadfile.Fragment.AddFragment;
 import com.example.dowloadfile.Model.DownloadModel;
 import com.example.dowloadfile.R;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -32,29 +28,28 @@ public class UpdateTitle extends BottomSheetDialogFragment {
     private Button mSaveButton;
     String titleIncludeFileType;
     private DownloadDBHelper myDB;
+
     public static UpdateTitle newInstance(){
         return new UpdateTitle();
     }
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.activity_rename_title, container, false);
-        return v;
+        return inflater.inflate(R.layout.activity_rename_title, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         mEditText = view.findViewById(R.id.edtText);
         mSaveButton = view.findViewById(R.id.btnSave);
-
         myDB = new DownloadDBHelper(requireActivity());
 
         boolean isUpdate = false;
-
         Bundle bundle = getArguments();
+
         if (bundle != null){
             isUpdate = true;
             titleIncludeFileType = bundle.getString("titleIncludeFileType");
@@ -81,6 +76,7 @@ public class UpdateTitle extends BottomSheetDialogFragment {
 
             }
         });
+
         final boolean finalIsUpdate = isUpdate;
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,14 +96,12 @@ public class UpdateTitle extends BottomSheetDialogFragment {
                 dismiss();
             }
         });
-
     }
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
         Activity activity = getActivity();
-
         if(activity instanceof OnDialogCloseListener){
             ((OnDialogCloseListener)activity).onDialogClose(dialog);
         }

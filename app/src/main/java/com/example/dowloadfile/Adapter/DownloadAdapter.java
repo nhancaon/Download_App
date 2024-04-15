@@ -9,14 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,6 +24,7 @@ import com.example.dowloadfile.Utils.DownloadDBHelper;
 import com.example.dowloadfile.Utils.ItemClickListener;
 import com.example.dowloadfile.Utils.UpdateTitle;
 
+import java.io.File;
 import java.util.List;
 
 public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -207,9 +206,30 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public void deleteDownload(int position){
         DownloadModel item = downloadModels.get(position);
+
+        // Delete files from Files and Device Explorer (storage/emulated/0/Downloads and storage/self/primary/Downloads)
+        deleteInFiles_DeviceExplorer(item.getFile_path());
+
+        // Delete files from SQLite database
         myDB.deleteDownload(item.getDownloadId());
+
+        // Delete files from DownloadModel list
         downloadModels.remove(position);
         notifyItemRemoved(position);
+    }
+
+    private void deleteInFiles_DeviceExplorer(String filePath) {
+        // Remove the scheme (file://) from the file path
+        String cleanedFilePath = Uri.parse(filePath).getPath();
+        File file = new File(cleanedFilePath);
+        boolean deleted = file.delete();
+
+        if (!deleted) {
+            // Handle the case where the file couldn't be deleted
+            Log.e("Delete Error", "Failed to delete file: " + cleanedFilePath);
+            return;
+        }
+        notifyDataSetChanged();
     }
 
     // Update downloaded file Title
