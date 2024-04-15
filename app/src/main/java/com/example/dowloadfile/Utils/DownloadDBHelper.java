@@ -108,7 +108,6 @@ public class DownloadDBHelper extends SQLiteOpenHelper {
                         download.setFile_size(cursor.getString(cursor.getColumnIndex("file_size")));
                         download.setIs_paused(cursor.getInt(cursor.getColumnIndex("is_paused")) == 1);
                         downloadList.add(download);
-
                     } while (cursor.moveToNext());
                 }
             }
