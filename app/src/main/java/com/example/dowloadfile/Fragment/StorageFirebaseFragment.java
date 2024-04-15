@@ -1,6 +1,7 @@
 package com.example.dowloadfile.Fragment;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ public class StorageFirebaseFragment extends Fragment {
     private GridView gridView;
     private ArrayList<DownloadModel> dataList;
     private GridViewAdapter adapter;
+    private Integer retrieveQuantity;
 
     public StorageFirebaseFragment() {
         // Required empty public constructor
@@ -78,6 +80,7 @@ public class StorageFirebaseFragment extends Fragment {
                                             return o1.getTitle().compareTo(o2.getTitle());
                                         }
                                     });
+                                    retrieveQuantity = dataList.size();
                                     adapter.notifyDataSetChanged();
                                 } else {
                                     Toast.makeText(requireContext(), "Failed to retrieve image URL", Toast.LENGTH_SHORT).show();
