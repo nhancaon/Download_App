@@ -18,14 +18,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <EditText
         android:id="@+id/txtHeaderTab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
         android:paddingVertical="13dp"
         android:paddingStart="15dp"
-        android:text="@string/header_tab"
+        android:hint="search"
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColorHint="@color/white"

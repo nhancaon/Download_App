@@ -71,9 +71,11 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     String file_name, status, progress, file_size, file_path;
     long downloadId;
     EditText fileName;
-    EditText edtLink;
+    EditText edtLink,editSearch;
     List<DownloadModel> downloadModels = new ArrayList<>();
+    List<DownloadModel> searchModels = new ArrayList<>();
     Button add_download_list;
+    ImageView search;
     RecyclerView data_list;
     DownloadAdapter downloadAdapter;
     final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Upload Firebase downloadedFile");
@@ -93,6 +95,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         View view = inflater.inflate(R.layout.fragment_add, container, false);
         dbHelper = new DownloadDBHelper(requireActivity().getApplicationContext());
         restoreDownloadData();
+
 
         add_download_list = view.findViewById(R.id.add_download_list);
         data_list = view.findViewById(R.id.data_list);
@@ -138,6 +141,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         requireContext().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
         // Icons and text for each tab

@@ -25,6 +25,7 @@ import com.example.dowloadfile.Utils.ItemClickListener;
 import com.example.dowloadfile.Utils.UpdateTitle;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
