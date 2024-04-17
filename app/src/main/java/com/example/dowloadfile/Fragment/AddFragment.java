@@ -2,6 +2,7 @@ package com.example.dowloadfile.Fragment;
 
 import android.Manifest;
 import android.app.DownloadManager;
+import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -17,6 +18,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
@@ -31,6 +34,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -76,6 +80,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     Button add_download_list;
     RecyclerView data_list;
     DownloadAdapter downloadAdapter;
+    private SearchView searchView;
     final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Upload Firebase downloadedFile");
     final private StorageReference storageReference = FirebaseStorage.getInstance().getReference();
 
@@ -138,6 +143,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        setHasOptionsMenu(true);
         requireContext().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
         // Icons and text for each tab
@@ -174,6 +180,29 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
 
+            }
+        });
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+
+        SearchManager searchManager = (SearchManager) requireActivity().getSystemService (Context.SEARCH_SERVICE);
+        searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(requireActivity().getComponentName()));
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                downloadAdapter.getFilter().filter(query);
+                return false;
+            }
+            @Override
+            public boolean onQueryTextChange (String newText) {
+                downloadAdapter.getFilter().filter(newText);
+                return false;
             }
         });
     }

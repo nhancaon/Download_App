@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -25,26 +27,65 @@ import com.example.dowloadfile.Utils.ItemClickListener;
 import com.example.dowloadfile.Utils.UpdateTitle;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
-public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Filterable {
     Context context;
-    public List<DownloadModel> downloadModels;
     ItemClickListener clickListener;
+    public List<DownloadModel> downloadModels;
+    public List<DownloadModel> downloadModelsOld;
     private DownloadDBHelper myDB;
     private FragmentManager fragmentManager;
-
     private String path;
 
-    public DownloadAdapter(Context context, List<DownloadModel> downloadModels,
-                           ItemClickListener itemClickListener,
-                           DownloadDBHelper myDB,
-                           FragmentManager fragmentManager) {
+    public DownloadAdapter(Context context, List<DownloadModel> downloadModels,ItemClickListener itemClickListener,DownloadDBHelper myDB,FragmentManager fragmentManager) {
         this.context = context;
         this.downloadModels = downloadModels;
+        this.downloadModelsOld = downloadModels;
         this.clickListener = itemClickListener;
         this.myDB = myDB;
         this.fragmentManager = fragmentManager;
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                String strSearch = constraint.toString();
+                if(strSearch.isEmpty()){
+                    downloadModels = downloadModelsOld;
+                }
+                else{
+                    List<DownloadModel> list = new ArrayList<>();
+                    for(DownloadModel downloadModel : downloadModelsOld){
+                        String fileName = downloadModel.getTitle();
+                        int extensionIndex = fileName.lastIndexOf('.');
+                        if (extensionIndex != -1) {
+                            fileName = fileName.substring(0, extensionIndex);
+                        }
+
+                        // Check if the extracted file name contains the search string
+                        if (fileName.toLowerCase().contains(strSearch.toLowerCase())) {
+                            list.add(downloadModel);
+                        }
+                    }
+                    downloadModels = list;
+                }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values= downloadModels;
+
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                downloadModels = (List<DownloadModel>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     public class DownloadViewHolder extends RecyclerView.ViewHolder {

@@ -5,15 +5,17 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.example.dowloadfile.Adapter.ViewPagerAdapter;
+import com.example.dowloadfile.Fragment.AddFragment;
 import com.google.android.material.tabs.TabLayout;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private TabLayout mTabLayout;
     private ViewPager mViewPager;
-    private TextView txtHeaderTab;
     private String[] tabTitles;
 
     @Override
@@ -23,7 +25,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         mTabLayout = findViewById(R.id.tab_layout);
         mViewPager = findViewById(R.id.view_pager);
-        txtHeaderTab = findViewById(R.id.txtHeaderTab);
 
         // Define an array of tab titles
         tabTitles = getResources().getStringArray(R.array.tab_titles);
@@ -37,18 +38,18 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         TabLayout.Tab tab = mTabLayout.getTabAt(1);
         if (tab != null) {
-            txtHeaderTab.setText(tabTitles[1]);
+            setTitle(tabTitles[1]);
             tab.select();
         }
     }
 
     private void changeHeaderTab(int selectedTabPosition){
-        txtHeaderTab.setText(tabTitles[selectedTabPosition]);
+        setTitle(tabTitles[selectedTabPosition]);
     }
 
     @Override
     public void onTabSelected(TabLayout.Tab tab) {
-        changeHeaderTab(tab.getPosition());
+        setTitle(tabTitles[tab.getPosition()]);
     }
 
     @Override
