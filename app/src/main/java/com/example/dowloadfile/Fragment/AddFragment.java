@@ -2,6 +2,7 @@ package com.example.dowloadfile.Fragment;
 
 import android.Manifest;
 import android.app.DownloadManager;
+import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -17,6 +18,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
@@ -31,6 +34,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -71,14 +75,16 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     String file_name, status, progress, file_size, file_path;
     long downloadId;
     EditText fileName;
-    EditText edtLink,editSearch;
+    EditText edtLink, editSearch;
     List<DownloadModel> downloadModels = new ArrayList<>();
     List<DownloadModel> searchModels = new ArrayList<>();
     Button add_download_list;
     ImageView search;
     RecyclerView data_list;
     DownloadAdapter downloadAdapter;
-    final private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Upload Firebase downloadedFile");
+    private SearchView searchView;
+    final private DatabaseReference databaseReference = FirebaseDatabase.getInstance()
+            .getReference("Upload Firebase downloadedFile");
     final private StorageReference storageReference = FirebaseStorage.getInstance().getReference();
 
     public AddFragment() {
@@ -91,11 +97,11 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,@Nullable ViewGroup container,@Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add, container, false);
         dbHelper = new DownloadDBHelper(requireActivity().getApplicationContext());
         restoreDownloadData();
-
 
         add_download_list = view.findViewById(R.id.add_download_list);
         data_list = view.findViewById(R.id.data_list);
@@ -108,29 +114,27 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
             }
         });
 
-        downloadAdapter = new DownloadAdapter(requireContext(),downloadModels, this, dbHelper, requireActivity().getSupportFragmentManager());
+        downloadAdapter = new DownloadAdapter(requireContext(), downloadModels, this, dbHelper,
+                requireActivity().getSupportFragmentManager());
         data_list.setAdapter(downloadAdapter);
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new RecyclerViewTouchHelper(downloadAdapter));
         itemTouchHelper.attachToRecyclerView(data_list);
 
         Intent intent = requireActivity().getIntent();
-        if(intent != null){
+        if (intent != null) {
             String action = intent.getAction();
             String type = intent.getType();
-            if(Intent.ACTION_SEND.equals(action) && type != null){
-                if(type.equalsIgnoreCase("text/plain")){
+            if (Intent.ACTION_SEND.equals(action) && type != null) {
+                if (type.equalsIgnoreCase("text/plain")) {
                     handleTextData(intent);
-                }
-                else if(type.startsWith("image/")){
+                } else if (type.startsWith("image/")) {
                     handleImage(intent);
-                }
-                else if(type.equalsIgnoreCase("application/pdf")){
+                } else if (type.equalsIgnoreCase("application/pdf")) {
                     handlePdfFile(intent);
                 }
-            }
-            else if(Intent.ACTION_SEND_MULTIPLE.equals(action) && type!=null){
-                if(type.startsWith("image/")){
+            } else if (Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null) {
+                if (type.startsWith("image/")) {
                     handleMultipleImage(intent);
                 }
             }
@@ -141,11 +145,11 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        setHasOptionsMenu(true);
         requireContext().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
         // Icons and text for each tab
-        int[] tabIcons = {R.drawable.ic_close, R.drawable.ic_add, R.drawable.ic_complete};
+        int[] tabIcons = { R.drawable.ic_close, R.drawable.ic_add, R.drawable.ic_complete };
         TabLayout tabLayout = requireActivity().findViewById(R.id.tab_layout);
 
         // Iterate through tabs and set custom view
@@ -164,7 +168,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                if(tab.getPosition() == 0){
+                if (tab.getPosition() == 0) {
                     requireActivity().finish();
                     System.exit(0);
                 }
@@ -183,12 +187,37 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+
+        SearchManager searchManager = (SearchManager) requireActivity().getSystemService(Context.SEARCH_SERVICE);
+        searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(requireActivity().getComponentName()));
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                downloadAdapter.getFilter().filter(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                downloadAdapter.getFilter().filter(newText);
+                return false;
+            }
+        });
+    }
+
+    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
     }
 
     /// Outside onViewCreated
-    private void uploadToFirebase(Uri uri){
-        final StorageReference imageReference = storageReference.child(System.currentTimeMillis() + "." + getFileExtension(Uri.parse(file_path)));
+    private void uploadToFirebase(Uri uri) {
+        final StorageReference imageReference = storageReference
+                .child(System.currentTimeMillis() + "." + getFileExtension(Uri.parse(file_path)));
 
         imageReference.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -220,7 +249,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         });
     }
 
-    //Extract file type
+    // Extract file type
     public static String extractFileName(String title) {
         // Split the title by dot (.)
         String[] parts = title.split("\\.");
@@ -313,7 +342,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         paste.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ClipboardManager clipboardManager = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipboardManager clipboardManager = (ClipboardManager) requireContext()
+                        .getSystemService(Context.CLIPBOARD_SERVICE);
                 try {
                     CharSequence charSequence = clipboardManager.getPrimaryClip().getItemAt(0).getText();
                     edtLink.setText(charSequence);
@@ -356,11 +386,12 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         }
 
         file_name += "." + extension;
-        String downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
-        File file = new File(downloadPath,file_name);
+        String downloadPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                .getAbsolutePath();
+        File file = new File(downloadPath, file_name);
 
         DownloadManager.Request request = null;
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             request = new DownloadManager.Request(Uri.parse(url))
                     .setTitle(file_name)
                     .setDescription("Downloading")
@@ -369,8 +400,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                     .setRequiresCharging(false)
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true);
-        }
-        else{
+        } else {
             request = new DownloadManager.Request(Uri.parse(url))
                     .setTitle(file_name)
                     .setDescription("Downloading")
@@ -393,7 +423,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         downloadModel.setFile_path("");
 
         downloadModels.add(downloadModel);
-        downloadAdapter.notifyItemInserted(downloadModels.size()-1);
+        downloadAdapter.notifyItemInserted(downloadModels.size() - 1);
 
         DownloadStatusTask downloadStatusTask = new DownloadStatusTask(downloadModel);
         runTask(downloadStatusTask, "" + downloadId);
@@ -401,7 +431,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
 
     public class DownloadStatusTask extends AsyncTask<String, String, String> {
         DownloadModel downloadModel;
-        public DownloadStatusTask(DownloadModel downloadModel){
+
+        public DownloadStatusTask(DownloadModel downloadModel) {
             this.downloadModel = downloadModel;
         }
 
@@ -412,7 +443,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         }
 
         private void downloadFileProcess(String downloadId) {
-            DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
+            DownloadManager downloadManager = (DownloadManager) requireContext()
+                    .getSystemService(Context.DOWNLOAD_SERVICE);
             boolean downloading = true;
 
             while (downloading) {
@@ -441,7 +473,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                             progress = 0; // or handle it according to your logic
                         }
                         String statusMessage = getStatusMessage(status);
-                        publishProgress(new String[]{String.valueOf(progress), String.valueOf(bytes_downloaded), statusMessage});
+                        publishProgress(new String[] { String.valueOf(progress), String.valueOf(bytes_downloaded),
+                                statusMessage });
                     }
                     cursor.close();
                 } else {
@@ -459,7 +492,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
 
             this.downloadModel.setProgress(values[0]);
             progress = values[0];
-            if (!downloadModel.getStatus().equalsIgnoreCase("PAUSE") && !downloadModel.getStatus().equalsIgnoreCase("RESUME")) {
+            if (!downloadModel.getStatus().equalsIgnoreCase("PAUSE")
+                    && !downloadModel.getStatus().equalsIgnoreCase("RESUME")) {
                 downloadModel.setStatus(values[2]);
                 status = values[2];
             }
@@ -501,7 +535,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
             if (comp) {
                 DownloadManager.Query query = new DownloadManager.Query();
                 query.setFilterById(id);
-                DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                DownloadManager downloadManager = (DownloadManager) requireContext()
+                        .getSystemService(Context.DOWNLOAD_SERVICE);
                 Cursor cursor = downloadManager.query(new DownloadManager.Query().setFilterById(id));
 
                 if (cursor != null && cursor.moveToFirst()) {
@@ -671,20 +706,24 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(requireActivity().getApplicationContext(), "Permission Successfull", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireActivity().getApplicationContext(), "Permission Successfull",
+                            Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(requireActivity().getApplicationContext(), "Permission Failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireActivity().getApplicationContext(), "Permission Failed", Toast.LENGTH_SHORT)
+                            .show();
                 }
         }
     }
 
     private boolean checkPermission() {
-        int result = ContextCompat.checkSelfPermission(requireActivity().getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int result = ContextCompat.checkSelfPermission(requireActivity().getApplicationContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (result == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
@@ -702,6 +741,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 extension.equalsIgnoreCase("avi") ||
                 extension.equalsIgnoreCase("html");
     }
+
     @Override
     public void onResume() {
         super.onResume();
