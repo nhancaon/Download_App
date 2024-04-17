@@ -7,84 +7,13 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:background="#008000"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/txtHeaderTab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:paddingVertical="13dp"
-        android:paddingStart="15dp"
-        android:text="@string/header_tab"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColorHint="@color/white"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="@+id/toolbar"
-        app:layout_constraintStart_toEndOf="@+id/imgView" />
-
-<!--    <EditText-->
-<!--        android:id="@+id/editTextText"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:ems="10"-->
-<!--        android:paddingTop="15dp"-->
-<!--        android:hint="Tìm kiếm"-->
-<!--        android:textColorHint="@color/white"-->
-<!--        android:inputType="text"-->
-<!--        android:textColor="@color/white"-->
-<!--        app:layout_constraintBottom_toBottomOf="@+id/toolbar"-->
-<!--        app:layout_constraintStart_toEndOf="@+id/imgView" />-->
-
-    <ImageView
-        android:id="@+id/imgView"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:paddingLeft="10dp"
-        app:layout_constraintBottom_toBottomOf="@+id/toolbar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/ic_menu_header" />
-
-    <ImageView
-        android:id="@+id/imgView1"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        app:layout_constraintBottom_toBottomOf="@+id/toolbar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/ic_filter_header" />
-
-    <ImageView
-        android:id="@+id/imgView2"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        app:layout_constraintBottom_toBottomOf="@+id/toolbar"
-        app:layout_constraintEnd_toStartOf="@+id/imgView1"
-        app:srcCompat="@drawable/ic_question_header" />
-
-    <ImageView
-        android:id="@+id/imgView3"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        app:layout_constraintBottom_toBottomOf="@+id/toolbar"
-        app:layout_constraintEnd_toStartOf="@+id/imgView2"
-        app:srcCompat="@drawable/ic_search" />
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintBottom_toTopOf="@+id/tab_layout" />
+        app:layout_constraintBottom_toTopOf="@+id/tab_layout"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_layout"
