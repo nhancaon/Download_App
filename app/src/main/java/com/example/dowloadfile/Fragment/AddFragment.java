@@ -698,4 +698,16 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 extension.equalsIgnoreCase("avi") ||
                 extension.equalsIgnoreCase("html");
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Check if there are any downloads in progress and update their status
+        for (DownloadModel downloadModel : downloadModels) {
+            if (downloadModel.getStatus().equals("Running")) {
+                // Resume the AsyncTask to monitor download progress
+                DownloadStatusTask downloadStatusTask = new DownloadStatusTask(downloadModel);
+                runTask(downloadStatusTask, "" + downloadModel.getDownloadId());
+            }
+        }
+    }
 }

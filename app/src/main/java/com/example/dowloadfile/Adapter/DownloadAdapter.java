@@ -99,7 +99,10 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         downloadViewHolder.pause_resume.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (downloadModel.isIs_paused()) {
+                if(downloadModel.getStatus().equals("Completed")){
+
+                }
+                else if (downloadModel.isIs_paused()) {
                     downloadModel.setIs_paused(false);
                     downloadViewHolder.pause_resume.setText("PAUSE");
                     downloadModel.setStatus("RESUME");
