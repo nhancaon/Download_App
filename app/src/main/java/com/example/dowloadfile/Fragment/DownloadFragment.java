@@ -1,4 +1,7 @@
 package com.example.dowloadfile.Fragment;
+import static com.example.dowloadfile.Fragment.AddFragment.extractFileName;
+
+import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,6 +11,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,25 +37,29 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DownloadFragment extends Fragment {
 
     private GridView gridView;
     private ArrayList<DownloadModel> dataList;
     private GridViewAdapter adapter;
-
+    private  Button btnUploadToFirebase;
     private Button btnDownloadAndAddImages;
     private Spinner spinnerFolder;
     ArrayList<String> folderNames = new ArrayList<>();
     private  ArrayAdapter<String> spinnerAdapter;
     private TextView tvDownloadTime;
-
+    private TextView tvUploadTime;
     private long totalDownloadTime = 0;
+    private long totalUploadTime = 0;
     public DownloadFragment() {
         // Required empty public constructor
     }
+    private static final int REQUEST_CODE_PICK_FOLDER = 101;
 
     @Nullable
     @Override
@@ -64,6 +73,7 @@ public class DownloadFragment extends Fragment {
 
         // Tìm TextView bằng ID
         tvDownloadTime = view.findViewById(R.id.tvDownloadTime);
+        tvUploadTime = view.findViewById(R.id.tvUploadTime);
         // Lấy reference đến thư mục gốc trên Firebase Storage
         StorageReference rootRef = FirebaseStorage.getInstance().getReference();
 
@@ -101,6 +111,16 @@ public class DownloadFragment extends Fragment {
             }
         });
 
+        btnUploadToFirebase = view.findViewById(R.id.btnUploadDataToFirebase);
+        btnUploadToFirebase.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                totalUploadTime = 0;
+                // Gọi phương thức uploadToFirebase khi click vào nút
+                pickFolderAndUploadToFirebase();
+            }
+        });
+
         // Khởi tạo và lắng nghe sự kiện click cho nút
         btnDownloadAndAddImages = view.findViewById(R.id.btnDownloadAndAddImages);
         btnDownloadAndAddImages.setOnClickListener(new View.OnClickListener() {
@@ -113,6 +133,66 @@ public class DownloadFragment extends Fragment {
         });
         return view;
     }
+
+    private void pickFolderAndUploadToFirebase() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        startActivityForResult(intent, REQUEST_CODE_PICK_FOLDER);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_CODE_PICK_FOLDER && resultCode == Activity.RESULT_OK && data != null) {
+            Uri folderUri = data.getData();
+            if (folderUri != null) {
+                uploadFilesFromFolder(folderUri);
+            }
+        }
+    }
+
+    private void uploadFilesFromFolder(Uri folderUri) {
+        Cursor cursor = requireActivity().getContentResolver().query(
+                folderUri,
+                null,
+                null,
+                null,
+                null
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                // Lấy URI của file từ Cursor
+                String fileUriString = cursor.getString(cursor.getColumnIndex(MediaStore.Downloads.DATA));
+                Uri fileUri = Uri.parse(fileUriString);
+
+                // Upload file lên Firebase Storage
+                uploadToFirebase(fileUri);
+            } while (cursor.moveToNext());
+            cursor.close(); // Đóng Cursor sau khi sử dụng
+        }
+    }
+
+    private void uploadToFirebase(Uri fileUri) {
+        // Tạo một storage reference từ FirebaseStorage
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+
+        // Tạo một reference đến vị trí bạn muốn lưu trữ tệp trên Firebase Storage
+        StorageReference fileRef = storageRef.child("uploads/" + fileUri.getLastPathSegment());
+
+        // Tải lên tệp lên Firebase Storage
+        fileRef.putFile(fileUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    // Tải lên thành công
+                    Toast.makeText(requireContext(), "Upload success", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(exception -> {
+                    // Xảy ra lỗi khi tải lên
+                    Toast.makeText(requireContext(), "Upload failed", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
     private void downloadAndAddImages() {
         String selectedFolderName = "images"; // Default folder name
         long startTime = System.currentTimeMillis();

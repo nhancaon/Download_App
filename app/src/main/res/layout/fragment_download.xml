@@ -25,32 +25,55 @@
         android:id="@+id/spinnerFolder"
         android:layout_width="165dp"
         android:layout_height="43dp"
-        android:layout_marginTop="504dp"
-        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="44dp"
         android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnDownloadAndAddImages"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintHorizontal_bias="0.32"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/btnDownloadAndAddImages"
-        android:layout_width="143dp"
-        android:layout_height="52dp"
-        android:layout_marginBottom="44dp"
+        android:layout_width="99dp"
+        android:layout_height="35dp"
+        android:layout_marginBottom="52dp"
         android:background="#0080FF"
         android:text="Download"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.88"
+        app:layout_constraintHorizontal_bias="0.608"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/tvDownloadTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="54dp"
         android:text="Download completed in: "
         android:textColor="#000000"
-        app:layout_constraintEnd_toStartOf="@+id/btnDownloadAndAddImages"
-        tools:layout_editor_absoluteY="568dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvUploadTime"
+        app:layout_constraintVertical_bias="0.243"
+        tools:layout_editor_absoluteX="20dp" />
+
+    <Button
+        android:id="@+id/btnUploadDataToFirebase"
+        android:layout_width="78dp"
+        android:layout_height="31dp"
+        android:layout_marginBottom="52dp"
+        android:background="#0080FF"
+        android:text="Upload"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.953"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tvUploadTime"
+        android:layout_width="158dp"
+        android:layout_height="16dp"
+        android:text="Upload completed in: "
+        android:textColor="#000000"
+        tools:layout_editor_absoluteX="20dp"
+        tools:layout_editor_absoluteY="438dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
