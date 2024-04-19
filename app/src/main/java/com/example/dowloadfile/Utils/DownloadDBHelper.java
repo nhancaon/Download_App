@@ -89,7 +89,7 @@ public class DownloadDBHelper extends SQLiteOpenHelper {
 
     @SuppressLint("Range")
     public List<DownloadModel> getAllDownload() {
-        db=this.getWritableDatabase();
+        db = this.getWritableDatabase();
         Cursor cursor = null;
         List<DownloadModel> downloadList = new ArrayList<>();
 
