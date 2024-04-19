@@ -1,79 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="4">
 
     <GridView
         android:id="@+id/gridView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="60dp"
+        android:layout_weight="3"
         android:clipToPadding="false"
-        android:columnWidth="150dp"
         android:gravity="center"
-        android:horizontalSpacing="8dp"
         android:numColumns="2"
-        android:padding="8dp"
         android:stretchMode="columnWidth"
-        android:verticalSpacing="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnDownloadAndAddImages"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:horizontalSpacing="8dp"
+        android:verticalSpacing="8dp"/>
 
-    <Spinner
-        android:id="@+id/spinnerFolder"
-        android:layout_width="165dp"
-        android:layout_height="43dp"
-        android:layout_marginBottom="44dp"
-        android:padding="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btnDownloadAndAddImages"
-        app:layout_constraintHorizontal_bias="0.32"
-        app:layout_constraintStart_toStartOf="parent" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-    <Button
-        android:id="@+id/btnDownloadAndAddImages"
-        android:layout_width="99dp"
-        android:layout_height="35dp"
-        android:layout_marginBottom="52dp"
-        android:background="#0080FF"
-        android:text="Download"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.608"
-        app:layout_constraintStart_toStartOf="parent" />
+        <TextView
+            android:id="@+id/tvUploadTime"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="10dp"
+            android:text="Upload completed in: "
+            android:textColor="@color/black"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tvDownloadTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Download completed in: "
-        android:textColor="#000000"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvUploadTime"
-        app:layout_constraintVertical_bias="0.243"
-        tools:layout_editor_absoluteX="20dp" />
+        <TextView
+            android:id="@+id/tvDownloadTime"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:text="Download completed in: "
+            android:textColor="@color/black"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvUploadTime" />
 
-    <Button
-        android:id="@+id/btnUploadDataToFirebase"
-        android:layout_width="78dp"
-        android:layout_height="31dp"
-        android:layout_marginBottom="52dp"
-        android:background="#0080FF"
-        android:text="Upload"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.953"
-        app:layout_constraintStart_toStartOf="parent" />
+        <Spinner
+            android:id="@+id/spinnerFolder"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:padding="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvDownloadTime" />
 
-    <TextView
-        android:id="@+id/tvUploadTime"
-        android:layout_width="158dp"
-        android:layout_height="16dp"
-        android:text="Upload completed in: "
-        android:textColor="#000000"
-        tools:layout_editor_absoluteX="20dp"
-        tools:layout_editor_absoluteY="438dp" />
+        <Button
+            android:id="@+id/btnDownloadAndAddImages"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:background="#0080FF"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:text="Download"
+            app:layout_constraintStart_toEndOf="@+id/spinnerFolder"
+            app:layout_constraintTop_toBottomOf="@+id/tvDownloadTime" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <Button
+            android:id="@+id/btnUploadDataToFirebase"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:background="#0080FF"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:text="Upload"
+            app:layout_constraintStart_toEndOf="@+id/btnDownloadAndAddImages"
+            app:layout_constraintTop_toBottomOf="@+id/tvDownloadTime" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
+
