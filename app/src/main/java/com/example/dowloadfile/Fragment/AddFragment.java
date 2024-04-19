@@ -727,6 +727,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
                 extension.equalsIgnoreCase("avi") ||
                 extension.equalsIgnoreCase("html");
     }
+
     @Override
     public void onResume() {
         super.onResume();
