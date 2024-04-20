@@ -146,9 +146,17 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setHasOptionsMenu(true);
+<<<<<<< HEAD
 
+=======
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//            requireContext().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED);
+//        }else {
+//            requireContext().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_NOT_EXPORTED);
+//        }
+>>>>>>> 8d39f88e97b7f4fee4cad426a139a6abafad5b4d
         // Icons and text for each tab
-        int[] tabIcons = { R.drawable.ic_close, R.drawable.ic_add, R.drawable.ic_complete,R.drawable.ic_file_download };
+        int[] tabIcons = { R.drawable.ic_close, R.drawable.ic_add, R.drawable.ic_complete,R.drawable.ic_baseline_cloud_download_24,R.drawable.ic_baseline_file_upload_24 };
         TabLayout tabLayout = requireActivity().findViewById(R.id.tab_layout);
 
         // Iterate through tabs and set custom view
