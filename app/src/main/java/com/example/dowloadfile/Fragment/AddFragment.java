@@ -147,12 +147,15 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         super.onViewCreated(view, savedInstanceState);
         setHasOptionsMenu(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requireContext().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED);
-        }else {
-            requireContext().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_NOT_EXPORTED);
+            requireContext().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+                    Context.RECEIVER_EXPORTED);
+        } else {
+            requireContext().registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+                    Context.RECEIVER_NOT_EXPORTED);
         }
         // Icons and text for each tab
-        int[] tabIcons = { R.drawable.ic_close, R.drawable.ic_add, R.drawable.ic_complete,R.drawable.ic_baseline_cloud_download_24,R.drawable.ic_baseline_file_upload_24 };
+        int[] tabIcons = { R.drawable.ic_close, R.drawable.ic_add, R.drawable.ic_complete,
+                R.drawable.ic_baseline_cloud_download_24, R.drawable.ic_baseline_file_upload_24 };
         TabLayout tabLayout = requireActivity().findViewById(R.id.tab_layout);
 
         // Iterate through tabs and set custom view
@@ -372,7 +375,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemClickList
         al.show();
     }
 
-    // CAO LÀM SO SÁNH THỜI GIAN (Log ra consolde)
     private void downloadFile(String url) {
         String nameFromURL = URLUtil.guessFileName(url, null, null);
         String extension = FilenameUtils.getExtension(nameFromURL);
