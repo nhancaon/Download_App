@@ -140,7 +140,7 @@ public class DownloadFragment extends Fragment {
                             }).addOnFailureListener(e -> {
                                 Toast.makeText(requireContext(), "Failed to get download URL", Toast.LENGTH_SHORT).show();
                             });
-                        }d
+                        }
                 } else {
                     Toast.makeText(requireContext(), "Failed to list files", Toast.LENGTH_SHORT).show();
                 }
