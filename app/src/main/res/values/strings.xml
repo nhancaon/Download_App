@@ -14,9 +14,8 @@
     <string-array name="tab_titles">
         <item>Exit</item>
         <item>Add</item>
-        <item>Firebase retrieve</item>
-        <item>Download multiple</item>
-        <item>Upload Image</item>
+        <item>Download</item>
+        <item>Upload</item>
     </string-array>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

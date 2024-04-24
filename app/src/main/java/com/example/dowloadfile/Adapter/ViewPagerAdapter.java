@@ -10,7 +10,6 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import com.example.dowloadfile.Fragment.AddFragment;
 import com.example.dowloadfile.Fragment.DownloadFragment;
 import com.example.dowloadfile.Fragment.UploadFragment;
-import com.example.dowloadfile.Fragment.StorageFirebaseFragment;
 
 public class ViewPagerAdapter extends FragmentPagerAdapter {
     private Context context;
@@ -30,10 +29,8 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
             case 1:
                 return new AddFragment(tabTitles);
             case 2:
-                return new StorageFirebaseFragment();
-            case 3:
                 return new DownloadFragment();
-            case 4:
+            case 3:
                 return new UploadFragment();
             default:
                 return new AddFragment(tabTitles);
@@ -42,6 +39,6 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        return 5;
+        return 4;
     }
 }
