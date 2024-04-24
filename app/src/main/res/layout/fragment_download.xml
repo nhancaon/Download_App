@@ -28,61 +28,36 @@
         android:layout_weight="1">
 
         <TextView
-            android:id="@+id/tvUploadTime"
+            android:id="@+id/txtDownloadTime"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="10dp"
-            android:text="Upload completed in: "
-            android:textColor="@color/black"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/tvDownloadTime"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginStart="70dp"
+            android:layout_marginTop="30dp"
             android:text="Download completed in: "
             android:textColor="@color/black"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvUploadTime" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Spinner
             android:id="@+id/spinnerFolder"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:layout_marginStart="30dp"
+            android:layout_marginStart="70dp"
             android:layout_marginTop="20dp"
             android:padding="8dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvDownloadTime" />
+            app:layout_constraintTop_toBottomOf="@+id/txtDownloadTime" />
 
         <Button
             android:id="@+id/btnDownloadAndAddImages"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
             android:background="#0080FF"
-            android:layout_marginStart="30dp"
+            android:layout_marginStart="60dp"
             android:layout_marginTop="20dp"
             android:text="Download"
             app:layout_constraintStart_toEndOf="@+id/spinnerFolder"
-            app:layout_constraintTop_toBottomOf="@+id/tvDownloadTime" />
-
-
-
-        <Button
-            android:id="@+id/btnUploadDataToFirebase"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:background="#0080FF"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="20dp"
-            android:text="Upload"
-            app:layout_constraintStart_toEndOf="@+id/btnDownloadAndAddImages"
-            app:layout_constraintTop_toBottomOf="@+id/tvDownloadTime" />
-
+            app:layout_constraintTop_toBottomOf="@+id/txtDownloadTime" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
 
