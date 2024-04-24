@@ -54,7 +54,7 @@ public class StorageFirebaseFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        FirebaseStorage.getInstance().getReference().child("image").listAll().addOnCompleteListener(new OnCompleteListener<ListResult>() {
+        FirebaseStorage.getInstance().getReference().child("images").listAll().addOnCompleteListener(new OnCompleteListener<ListResult>() {
             @Override
             public void onComplete(@NonNull Task<ListResult> task) {
                 if (task.isSuccessful()) {
