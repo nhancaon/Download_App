@@ -11,6 +11,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -240,6 +242,7 @@ public class DownloadFragment extends Fragment {
     }
 
     private void checkDownloadStatus(DownloadManager downloadManager, long downloadId, long startTime) {
+        Handler handler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
             boolean downloading = true;
             while (downloading) {
@@ -255,14 +258,19 @@ public class DownloadFragment extends Fragment {
                             long elapsedTime = endTime - startTime;
 
                             // Thêm thời gian download của mỗi file vào totalDownloadTime
-                            totalDownloadTime += elapsedTime;
+//                            totalDownloadTime += elapsedTime;
 
                             // Chuyển đổi thời gian thành định dạng phù hợp (ví dụ: giây, phút)
-                            String downloadTime = formatDownloadTime(totalDownloadTime);
+//                            String downloadTime = formatDownloadTime(totalDownloadTime);
 
                             // Hiển thị thời gian đếm hoàn thành trên TextView
-                            tvDownloadTime.post(() -> tvDownloadTime.setText("Download completed in: " + downloadTime));
+//                            tvDownloadTime.post(() -> tvDownloadTime.setText("Download completed in: " + downloadTime));
 
+                            // Convert the time to a suitable format (e.g., seconds, minutes)
+                            String downloadTime = formatDownloadTime(elapsedTime);
+
+                            // Display the total download time on TextView
+                            handler.post(() -> tvDownloadTime.setText("Total download time: " + downloadTime));
                             downloading = false;
                         } else if (status == DownloadManager.STATUS_FAILED) {
                             // Xử lý trường hợp tải xuống thất bại
