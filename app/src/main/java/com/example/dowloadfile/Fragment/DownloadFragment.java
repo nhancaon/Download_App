@@ -6,6 +6,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DownloadFragment extends Fragment {
     private GridView gridView;
@@ -120,27 +125,28 @@ public class DownloadFragment extends Fragment {
             FirebaseStorage.getInstance().getReference().child(spinnerFolder.getSelectedItem().toString()).listAll().addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     List<StorageReference> items = task.getResult().getItems();
-                    for (StorageReference item : items) {
-                        String fileName = item.getName();
+                    Toast.makeText(requireContext(), "All files selected in folder was queue", Toast.LENGTH_SHORT).show();
+                        for (StorageReference item : items) {
+                                String fileName = item.getName();
+                                // Lấy URL của file
+                                item.getDownloadUrl().addOnSuccessListener(uri -> {
+                                        DownloadManager.Request request = new DownloadManager.Request(uri)
+                                                .setTitle(fileName)
+                                                .setDescription("Downloading")
+                                                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                                                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
 
-                        // Lấy URL của file
-                        item.getDownloadUrl().addOnSuccessListener(uri -> {
-                            DownloadManager.Request request = new DownloadManager.Request(uri)
-                                    .setTitle(fileName)
-                                    .setDescription("Downloading")
-                                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                                    .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+                                        // Thêm request vào DownloadManager để bắt đầu quá trình tải xuống
+                                        DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                                        long downloadId = downloadManager.enqueue(request);
 
-                            // Thêm request vào DownloadManager để bắt đầu quá trình tải xuống
-                            DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
-                            long downloadId = downloadManager.enqueue(request);
-
-                            // Kiểm tra trạng thái của tải xuống
-                            checkDownloadStatus(downloadManager, downloadId, startTime);
-                        }).addOnFailureListener(e -> {
-                            Toast.makeText(requireContext(), "Failed to get download URL", Toast.LENGTH_SHORT).show();
-                        });
-                    }
+                                        // Kiểm tra trạng thái của tải xuống
+                                        checkDownloadStatus(downloadManager, downloadId, startTime);
+                                
+                            }).addOnFailureListener(e -> {
+                                Toast.makeText(requireContext(), "Failed to get download URL", Toast.LENGTH_SHORT).show();
+                            });
+                        }
                 } else {
                     Toast.makeText(requireContext(), "Failed to list files", Toast.LENGTH_SHORT).show();
                 }
@@ -151,9 +157,11 @@ public class DownloadFragment extends Fragment {
     }
 
     private void checkDownloadStatus(DownloadManager downloadManager, long downloadId, long startTime) {
+        Handler handler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
             boolean downloading = true;
             while (downloading) {
+                // using ID to check download file status because many file download so shoulde be using thread to check status each file
                 DownloadManager.Query query = new DownloadManager.Query();
                 query.setFilterById(downloadId);
                 Cursor cursor = downloadManager.query(query);
@@ -166,12 +174,19 @@ public class DownloadFragment extends Fragment {
                             long elapsedTime = endTime - startTime;
 
                             // Thêm thời gian download của mỗi file vào totalDownloadTime
-                            totalDownloadTime += elapsedTime;
+//                            totalDownloadTime += elapsedTime;
 
                             // Chuyển đổi thời gian thành định dạng phù hợp (ví dụ: giây, phút)
-                            String downloadTime = formatDownloadTime(totalDownloadTime);
-                            txtDownloadTime.post(() -> txtDownloadTime.setText("Download completed in: " + downloadTime));
+//                            String downloadTime = formatDownloadTime(totalDownloadTime);
 
+                            // Hiển thị thời gian đếm hoàn thành trên TextView
+//                            tvDownloadTime.post(() -> tvDownloadTime.setText("Download completed in: " + downloadTime));
+
+                            // Convert the time to a suitable format (e.g., seconds, minutes)
+                            String downloadTime = formatDownloadTime(elapsedTime);
+
+                            // Display the total download time on TextView
+                            handler.post(() -> txtDownloadTime.setText("Total download time: " + downloadTime));
                             downloading = false;
                         } else if (status == DownloadManager.STATUS_FAILED) {
                             downloading = false;
