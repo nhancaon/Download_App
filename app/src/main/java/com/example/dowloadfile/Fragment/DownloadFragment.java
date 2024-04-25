@@ -1,6 +1,5 @@
 package com.example.dowloadfile.Fragment;
 
-import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.database.Cursor;
@@ -12,6 +11,8 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -69,10 +70,8 @@ public class DownloadFragment extends Fragment {
         txtDownloadTime = view.findViewById(R.id.txtDownloadTime);
         btnDownloadAndAddImages = view.findViewById(R.id.btnDownloadAndAddImages);
 
-        // Lấy danh sách tất cả các item trực tiếp trong thư mục gốc (bao gồm cả folder và file)
         FirebaseStorage.getInstance().getReference().listAll().addOnSuccessListener(listResult -> {
             for (StorageReference prefix : listResult.getPrefixes()) {
-                // Lấy tên của folder và thêm vào danh sách
                 folderNames.add(prefix.getName());
                 spinnerAdapter.notifyDataSetChanged();
             }
@@ -89,6 +88,7 @@ public class DownloadFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        setHasOptionsMenu(true);
 
         spinnerFolder.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -109,6 +109,12 @@ public class DownloadFragment extends Fragment {
                 downloadAllImagesInFolder();
             }
         });
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.delete_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     private void downloadAllImagesInFolder() {
@@ -206,7 +212,6 @@ public class DownloadFragment extends Fragment {
         }
     }
 
-    // Ngon
     private void loadImagesFromFolder(String folderName) {
         dataList.clear();
 

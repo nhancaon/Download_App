@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Dowload Manager</string>
     <string name="action_search">Search</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_select_all">Select All</string>
     <string name="header_tab">Header</string>
     <string name="title">Advanced Download Manager</string>
     <string name="next_update">This operation will be updated soon!</string>
