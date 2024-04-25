@@ -168,24 +168,26 @@ public class DownloadFragment extends Fragment implements GridItemClickListener 
                     List<StorageReference> items = task.getResult().getItems();
                     Toast.makeText(requireContext(), "All files selected in folder was queue", Toast.LENGTH_SHORT).show();
                         for (StorageReference item : items) {
-                            String fileName = item.getName();
-                            // Lấy URL của file
-                            item.getDownloadUrl().addOnSuccessListener(uri -> {
-                                DownloadManager.Request request = new DownloadManager.Request(uri)
-                                        .setTitle(fileName)
-                                        .setDescription("Downloading")
-                                        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                                        .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+                            new Thread(() -> {
+                                String fileName = item.getName();
+                                // Lấy URL của file
+                                item.getDownloadUrl().addOnSuccessListener(uri -> {
+                                    DownloadManager.Request request = new DownloadManager.Request(uri)
+                                            .setTitle(fileName)
+                                            .setDescription("Downloading")
+                                            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                                            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
 
-                                // Thêm request vào DownloadManager để bắt đầu quá trình tải xuống
-                                DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
-                                long downloadId = downloadManager.enqueue(request);
+                                    // Thêm request vào DownloadManager để bắt đầu quá trình tải xuống
+                                    DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                                    long downloadId = downloadManager.enqueue(request);
 
-                                // Kiểm tra trạng thái của tải xuống
-                                checkDownloadStatus(downloadManager, downloadId, startTime);
-                            }).addOnFailureListener(e -> {
-                                Toast.makeText(requireContext(), "Failed to get download URL", Toast.LENGTH_SHORT).show();
-                            });
+                                    // Kiểm tra trạng thái của tải xuống
+                                    checkDownloadStatus(downloadManager, downloadId, startTime);
+                                }).addOnFailureListener(e -> {
+                                    Toast.makeText(requireContext(), "Failed to get download URL", Toast.LENGTH_SHORT).show();
+                                });
+                            }).start();
                         }
                 } else {
                     Toast.makeText(requireContext(), "Failed to list files", Toast.LENGTH_SHORT).show();
