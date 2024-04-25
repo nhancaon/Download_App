@@ -19,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,6 +31,7 @@ import androidx.fragment.app.Fragment;
 import com.example.dowloadfile.Adapter.GridViewAdapter;
 import com.example.dowloadfile.Model.DownloadModel;
 import com.example.dowloadfile.R;
+import com.example.dowloadfile.Utils.GridItemClickListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.storage.FirebaseStorage;
@@ -43,7 +45,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class DownloadFragment extends Fragment {
+public class DownloadFragment extends Fragment implements GridItemClickListener {
     private GridView gridView;
     private ArrayList<DownloadModel> dataList;
     private GridViewAdapter adapter;
@@ -52,7 +54,7 @@ public class DownloadFragment extends Fragment {
     ArrayList<String> folderNames = new ArrayList<>();
     private  ArrayAdapter<String> spinnerAdapter;
     private TextView txtDownloadTime;
-    private long totalDownloadTime = 0;
+    private LinearLayout linearLayout1, linearLayout2;
     public DownloadFragment() {
         // Required empty public constructor
     }
@@ -61,9 +63,12 @@ public class DownloadFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_download, container, false);
-        gridView = view.findViewById(R.id.gridView);
         dataList = new ArrayList<>();
-        adapter = new GridViewAdapter(requireContext(), dataList);
+        gridView = view.findViewById(R.id.gridView);
+        linearLayout1 = view.findViewById(R.id.linearLayout1);
+        linearLayout2 = view.findViewById(R.id.linearLayout2);
+
+        adapter = new GridViewAdapter(requireContext(), dataList, this, linearLayout1, linearLayout2);
         gridView.setAdapter(adapter);
 
         spinnerFolder = view.findViewById(R.id.spinnerFolder);
@@ -88,7 +93,6 @@ public class DownloadFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setHasOptionsMenu(true);
 
         spinnerFolder.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -105,16 +109,25 @@ public class DownloadFragment extends Fragment {
         btnDownloadAndAddImages.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                totalDownloadTime = 0;
                 downloadAllImagesInFolder();
             }
         });
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.delete_menu, menu);
-        super.onCreateOptionsMenu(menu, inflater);
+    public void onPause() {
+        super.onPause();
+        if (adapter != null) {
+            adapter.clearActionMode();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (adapter != null) {
+            adapter.clearActionMode();
+        }
     }
 
     private void downloadAllImagesInFolder() {
@@ -127,22 +140,21 @@ public class DownloadFragment extends Fragment {
                     List<StorageReference> items = task.getResult().getItems();
                     Toast.makeText(requireContext(), "All files selected in folder was queue", Toast.LENGTH_SHORT).show();
                         for (StorageReference item : items) {
-                                String fileName = item.getName();
-                                // Lấy URL của file
-                                item.getDownloadUrl().addOnSuccessListener(uri -> {
-                                        DownloadManager.Request request = new DownloadManager.Request(uri)
-                                                .setTitle(fileName)
-                                                .setDescription("Downloading")
-                                                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                                                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+                            String fileName = item.getName();
+                            // Lấy URL của file
+                            item.getDownloadUrl().addOnSuccessListener(uri -> {
+                                DownloadManager.Request request = new DownloadManager.Request(uri)
+                                        .setTitle(fileName)
+                                        .setDescription("Downloading")
+                                        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                                        .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
 
-                                        // Thêm request vào DownloadManager để bắt đầu quá trình tải xuống
-                                        DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
-                                        long downloadId = downloadManager.enqueue(request);
+                                // Thêm request vào DownloadManager để bắt đầu quá trình tải xuống
+                                DownloadManager downloadManager = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                                long downloadId = downloadManager.enqueue(request);
 
-                                        // Kiểm tra trạng thái của tải xuống
-                                        checkDownloadStatus(downloadManager, downloadId, startTime);
-                                
+                                // Kiểm tra trạng thái của tải xuống
+                                checkDownloadStatus(downloadManager, downloadId, startTime);
                             }).addOnFailureListener(e -> {
                                 Toast.makeText(requireContext(), "Failed to get download URL", Toast.LENGTH_SHORT).show();
                             });
@@ -173,20 +185,11 @@ public class DownloadFragment extends Fragment {
                             long endTime = System.currentTimeMillis();
                             long elapsedTime = endTime - startTime;
 
-                            // Thêm thời gian download của mỗi file vào totalDownloadTime
-//                            totalDownloadTime += elapsedTime;
-
-                            // Chuyển đổi thời gian thành định dạng phù hợp (ví dụ: giây, phút)
-//                            String downloadTime = formatDownloadTime(totalDownloadTime);
-
-                            // Hiển thị thời gian đếm hoàn thành trên TextView
-//                            tvDownloadTime.post(() -> tvDownloadTime.setText("Download completed in: " + downloadTime));
-
                             // Convert the time to a suitable format (e.g., seconds, minutes)
                             String downloadTime = formatDownloadTime(elapsedTime);
 
                             // Display the total download time on TextView
-                            handler.post(() -> txtDownloadTime.setText("Total download time: " + downloadTime));
+                            handler.post(() -> txtDownloadTime.setText(getString(R.string.complete_download) + downloadTime));
                             downloading = false;
                         } else if (status == DownloadManager.STATUS_FAILED) {
                             downloading = false;
@@ -220,6 +223,7 @@ public class DownloadFragment extends Fragment {
             public void onComplete(@NonNull Task<ListResult> task) {
                 if (task.isSuccessful()) {
                     ListResult listResult = task.getResult();
+                    adapter.setLayoutVisibility(listResult.getItems().size());
                     for (StorageReference item : listResult.getItems()) {
                         item.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
                             @Override
@@ -233,15 +237,42 @@ public class DownloadFragment extends Fragment {
 
                                     // Add the downloadModel to your dataList
                                     dataList.add(downloadModel);
-                                    // Sort the dataList based on title or any other criteria
+                                    // Sort the dataList based on title
                                     Collections.sort(dataList, new Comparator<DownloadModel>() {
                                         @Override
                                         public int compare(DownloadModel o1, DownloadModel o2) {
-                                            // You can change the sorting criteria here
-                                            return o1.getTitle().compareTo(o2.getTitle());
+                                            String title1 = o1.getTitle();
+                                            String title2 = o2.getTitle();
+
+                                            // Split titles into parts containing numbers and non-numbers
+                                            String[] parts1 = title1.split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)");
+                                            String[] parts2 = title2.split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)");
+
+                                            // Compare each part sequentially
+                                            int i = 0;
+                                            while (i < parts1.length && i < parts2.length) {
+                                                // If both parts are numeric, compare them as integers
+                                                if (parts1[i].matches("\\d+") && parts2[i].matches("\\d+")) {
+                                                    int num1 = Integer.parseInt(parts1[i]);
+                                                    int num2 = Integer.parseInt(parts2[i]);
+                                                    int result = Integer.compare(num1, num2);
+                                                    if (result != 0) {
+                                                        return result;
+                                                    }
+                                                } else {
+                                                    // Compare parts as strings
+                                                    int result = parts1[i].compareToIgnoreCase(parts2[i]);
+                                                    if (result != 0) {
+                                                        return result;
+                                                    }
+                                                }
+                                                i++;
+                                            }
+
+                                            // If all parts are the same up to this point, compare lengths
+                                            return parts1.length - parts2.length;
                                         }
                                     });
-                                    Integer retrieveQuantity = dataList.size();
                                     adapter.notifyDataSetChanged();
                                 } else {
                                     Toast.makeText(requireContext(), "Failed to retrieve image URL", Toast.LENGTH_SHORT).show();
@@ -254,5 +285,10 @@ public class DownloadFragment extends Fragment {
                 }
             }
         });
+    }
+
+    @Override
+    public void onItemLongClick(int position) {
+
     }
 }
