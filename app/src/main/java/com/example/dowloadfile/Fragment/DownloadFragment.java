@@ -1,6 +1,7 @@
 package com.example.dowloadfile.Fragment;
 
 import android.app.DownloadManager;
+import android.app.SearchManager;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 
 import com.example.dowloadfile.Adapter.GridViewAdapter;
@@ -55,6 +57,7 @@ public class DownloadFragment extends Fragment implements GridItemClickListener 
     private  ArrayAdapter<String> spinnerAdapter;
     private TextView txtDownloadTime;
     private LinearLayout linearLayout1, linearLayout2;
+    private SearchView searchView;
     public DownloadFragment() {
         // Required empty public constructor
     }
@@ -93,6 +96,7 @@ public class DownloadFragment extends Fragment implements GridItemClickListener 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        setHasOptionsMenu(true);
 
         spinnerFolder.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -110,6 +114,30 @@ public class DownloadFragment extends Fragment implements GridItemClickListener 
             @Override
             public void onClick(View v) {
                 downloadAllImagesInFolder();
+            }
+        });
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+
+        SearchManager searchManager = (SearchManager) requireActivity().getSystemService(Context.SEARCH_SERVICE);
+        searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(requireActivity().getComponentName()));
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                adapter.getFilter().filter(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                return false;
             }
         });
     }
@@ -189,7 +217,7 @@ public class DownloadFragment extends Fragment implements GridItemClickListener 
                             String downloadTime = formatDownloadTime(elapsedTime);
 
                             // Display the total download time on TextView
-                            handler.post(() -> txtDownloadTime.setText(getString(R.string.complete_download) + downloadTime));
+                            handler.post(() -> txtDownloadTime.setText(getString(R.string.complete_download) + " " + downloadTime));
                             downloading = false;
                         } else if (status == DownloadManager.STATUS_FAILED) {
                             downloading = false;

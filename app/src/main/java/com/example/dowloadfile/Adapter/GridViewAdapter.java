@@ -15,6 +15,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -29,11 +31,13 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class GridViewAdapter extends BaseAdapter {
+public class GridViewAdapter extends BaseAdapter implements Filterable {
     Context context;
     private ActionMode mode;
     ArrayList<DownloadModel> arrayList;
+    ArrayList<DownloadModel> arrayListOld;
     ArrayList<DownloadModel> selectList = new ArrayList<>();
     GridItemClickListener gridItemClickListener;
     SparseBooleanArray selectedItems;
@@ -44,10 +48,51 @@ public class GridViewAdapter extends BaseAdapter {
     public GridViewAdapter(Context context, ArrayList<DownloadModel> arrayList, GridItemClickListener listener, LinearLayout linearLayout1, LinearLayout linearLayout2) {
         this.context = context;
         this.arrayList = arrayList;
+        this.arrayListOld = arrayList;
         this.gridItemClickListener = listener;
         this.selectedItems = new SparseBooleanArray();
         this.linearLayout1 = linearLayout1;
         this.linearLayout2 = linearLayout2;
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                String strSearch = constraint.toString();
+                if(strSearch.isEmpty()){
+                    arrayList = arrayListOld;
+                }
+                else{
+                    ArrayList<DownloadModel> list = new ArrayList<>();
+                    for(DownloadModel downloadModel : arrayListOld){
+                        String fileName = downloadModel.getTitle();
+                        int extensionIndex = fileName.lastIndexOf('.');
+                        if (extensionIndex != -1) {
+                            fileName = fileName.substring(0, extensionIndex);
+                        }
+
+                        // Check if the extracted file name contains the search string
+                        if (fileName.toLowerCase().contains(strSearch.toLowerCase())) {
+                            list.add(downloadModel);
+                        }
+                    }
+                    arrayList = list;
+                }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = arrayList;
+
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                arrayList = (ArrayList<DownloadModel>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     @Override
