@@ -3,6 +3,9 @@
     <string name="action_search">Search</string>
     <string name="action_delete">Delete</string>
     <string name="action_select_all">Select All</string>
+    <string name="complete_download">Download completed in: </string>
+    <string name="folder">Folder:</string>
+    <string name="no_data_found">No Data Found</string>
     <string name="header_tab">Header</string>
     <string name="title">Advanced Download Manager</string>
     <string name="next_update">This operation will be updated soon!</string>

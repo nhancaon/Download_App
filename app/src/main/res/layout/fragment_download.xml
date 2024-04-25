@@ -4,22 +4,54 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/linearLayout"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="4">
+    android:weightSum="6">
 
-    <GridView
-        android:id="@+id/gridView"
+    <LinearLayout
+        android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3"
-        android:clipToPadding="false"
-        android:gravity="center"
-        android:numColumns="2"
-        android:stretchMode="columnWidth"
-        android:horizontalSpacing="8dp"
-        android:verticalSpacing="8dp"/>
+        android:orientation="horizontal"
+        android:layout_weight="5"
+        android:layout_margin="10dp"
+        android:visibility="gone">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center">
+            <TextView
+                android:id="@+id/txtNoData"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/no_data_found"
+                android:textSize="30sp"
+                android:textColor="@color/blueItemGrid"
+                android:textStyle="bold"
+                android:layout_gravity="center" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5"
+        android:orientation="vertical"
+        android:visibility="visible">
+        <GridView
+            android:id="@+id/gridView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:gravity="center"
+            android:numColumns="2"
+            android:stretchMode="columnWidth"
+            android:horizontalSpacing="8dp"
+            android:verticalSpacing="4dp"/>
+    </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout2"
@@ -30,22 +62,37 @@
         <TextView
             android:id="@+id/txtDownloadTime"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_marginStart="70dp"
-            android:layout_marginTop="30dp"
-            android:text="Download completed in: "
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/complete_download"
+            android:textSize="16sp"
             android:textColor="@color/black"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/txtFolder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="30dp"
+            android:text="@string/folder"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtDownloadTime" />
 
         <Spinner
             android:id="@+id/spinnerFolder"
             android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="70dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
-            android:padding="8dp"
-            app:layout_constraintStart_toStartOf="parent"
+            android:padding="4dp"
+            app:layout_constraintStart_toEndOf="@+id/txtFolder"
             app:layout_constraintTop_toBottomOf="@+id/txtDownloadTime" />
 
         <Button
@@ -53,7 +100,8 @@
             android:layout_width="wrap_content"
             android:layout_height="48dp"
             android:background="#0080FF"
-            android:layout_marginStart="60dp"
+            android:paddingHorizontal="10dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
             android:text="Download"
             app:layout_constraintStart_toEndOf="@+id/spinnerFolder"
